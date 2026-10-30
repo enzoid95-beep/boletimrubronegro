@@ -123,7 +123,8 @@
       "nome": "De la Cruz",
       "posicao": "MEI",
       "numero": 18,
-      "ativo": true
+      "ativo": true,
+      "foto": "fotos/de-la-cruz.jpg?v=mvuicdvi"
     },
     {
       "id": "lucas-paqueta",
