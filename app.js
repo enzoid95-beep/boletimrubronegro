@@ -96,6 +96,42 @@ function avatarHTML(j, tam = 'm') {
   </span>`;
 }
 
+
+/* ================= nacionalidades ================= */
+const PAISES = {
+  BR: 'Brasil', AR: 'Argentina', UY: 'Uruguai', CL: 'Chile', CO: 'Colômbia', EC: 'Equador', PY: 'Paraguai',
+  PE: 'Peru', VE: 'Venezuela', ES: 'Espanha', IT: 'Itália', PT: 'Portugal',
+};
+// nacionalidade do elenco atual (Opta), usada quando o elenco.json ainda não tem o campo "pais"
+const NACIONALIDADES = {
+  rossi: 'AR', andrew: 'BR', varela: 'UY', 'leo-ortiz': 'BR', 'leo-pereira': 'BR', 'ayrton-lucas': 'BR', danilo: 'BR',
+  'emerson-royal': 'BR', 'alex-sandro': 'BR', vitao: 'BR', pulgar: 'CL', saul: 'ES', arrascaeta: 'UY', carrascal: 'CO',
+  'samuel-lino': 'BR', 'de-la-cruz': 'UY', 'lucas-paqueta': 'BR', jorginho: 'IT', 'evertton-araujo': 'BR',
+  'luiz-araujo': 'BR', pedro: 'BR', valencia: 'EC', plata: 'EC', 'bruno-henrique': 'BR', 'joaquin-freitas': 'AR',
+};
+const paisDe = (j) => j.pais || NACIONALIDADES[j.id] || null;
+const faixasH = (cores) => cores.map((c, i) => `<rect y="${(20 / cores.length) * i}" width="30" height="${20 / cores.length + .1}" fill="${c}"/>`).join('');
+const DESENHO_BANDEIRA = {
+  BR: '<rect width="30" height="20" fill="#009c3b"/><path d="M15 2.5 27.5 10 15 17.5 2.5 10z" fill="#ffdf00"/><circle cx="15" cy="10" r="4.3" fill="#002776"/>',
+  AR: faixasH(['#74acdf', '#fff', '#74acdf']) + '<circle cx="15" cy="10" r="1.9" fill="#f6b40e"/>',
+  UY: faixasH(['#fff', '#0038a8', '#fff', '#0038a8', '#fff', '#0038a8', '#fff', '#0038a8', '#fff']) + '<rect width="12" height="11.1" fill="#fff"/><circle cx="6" cy="5.5" r="2.8" fill="#fcd116"/>',
+  CL: '<rect width="30" height="10" fill="#fff"/><rect y="10" width="30" height="10" fill="#d52b1e"/><rect width="10" height="10" fill="#0039a6"/><path d="M5 2.2l.8 2.4h2.5l-2 1.5.8 2.4-2.1-1.5-2.1 1.5.8-2.4-2-1.5h2.5z" fill="#fff"/>',
+  CO: '<rect width="30" height="10" fill="#fcd116"/><rect y="10" width="30" height="5" fill="#003893"/><rect y="15" width="30" height="5" fill="#ce1126"/>',
+  EC: '<rect width="30" height="10" fill="#ffdd00"/><rect y="10" width="30" height="5" fill="#034ea2"/><rect y="15" width="30" height="5" fill="#ed1c24"/><circle cx="15" cy="10" r="2.4" fill="#7a5c2e"/>',
+  PY: faixasH(['#d52b1e', '#fff', '#0038a8']) + '<circle cx="15" cy="10" r="1.8" fill="none" stroke="#0038a8" stroke-width=".7"/>',
+  PE: '<rect width="30" height="20" fill="#d91023"/><rect x="10" width="10" height="20" fill="#fff"/>',
+  VE: faixasH(['#ffcc00', '#00247d', '#cf142b']),
+  ES: '<rect width="30" height="20" fill="#aa151b"/><rect y="5" width="30" height="10" fill="#f1bf00"/>',
+  IT: '<rect width="10" height="20" fill="#009246"/><rect x="10" width="10" height="20" fill="#fff"/><rect x="20" width="10" height="20" fill="#ce2b37"/>',
+  PT: '<rect width="30" height="20" fill="#ff0000"/><rect width="12" height="20" fill="#006600"/><circle cx="12" cy="10" r="3.6" fill="#ffcc00"/><circle cx="12" cy="10" r="2.2" fill="#ff0000"/>',
+};
+function bandeiraHTML(j) {
+  const p = paisDe(j);
+  if (!p || !DESENHO_BANDEIRA[p]) return '';
+  return `<svg class="bandeira" viewBox="0 0 30 20" role="img" aria-label="${PAISES[p]}"><title>${PAISES[p]}</title>${DESENHO_BANDEIRA[p]}</svg>`;
+}
+const numeroCamisaHTML = (j) => (j.numero ? `<span class="camisa-num" aria-label="camisa ${j.numero}">${j.numero}</span>` : '');
+
 /* ================= configuração / GitHub ================= */
 function lerConfig() {
   let c = {};
@@ -491,7 +527,7 @@ function telaJogador(id) {
     <header class="card jogador-topo">
       ${avatarHTML(j, 'xxg')}
       <div>
-        <div class="sub">${POS_UM[j.posicao]}${j.numero ? `, camisa ${j.numero}` : ''}</div>
+        <div class="sub jogador-sub">${bandeiraHTML(j)}${POS_UM[j.posicao]}${j.numero ? `, camisa ${j.numero}` : ''}</div>
         <h1>${esc(j.nome)}</h1>
       </div>`;
   if (!jogos.length) return `${topo}</header><p class="vazio">Ainda sem notas nesta temporada.</p>`;
@@ -694,17 +730,23 @@ function linhaJogador(j, r) {
   const a = r.atuacoes[j.id] || { nota: null, gols: 0, assist: 0 };
   const sit = situacao(r, j.id);
   const v = a.nota ?? 6;
+  const par = (k, emoji, nome) => `<span class="ga-par ${a[k] ? 'tem' : ''}" role="group" aria-label="${nome}">
+      <button type="button" class="ga-menos" data-ga="${k}" data-delta="-1" aria-label="Tirar ${nome.toLowerCase()}">−</button>
+      <button type="button" class="ga-icone" data-ga="${k}" data-delta="1" title="Somar ${nome.toLowerCase()}"><span aria-hidden="true">${emoji}</span><b class="ga-v" data-v="${k}">${a[k] || ''}</b></button>
+      <button type="button" class="ga-mais" data-ga="${k}" data-delta="1" aria-label="Somar ${nome.toLowerCase()}">+</button>
+    </span>`;
   return `<div class="jog ${sit}" data-jogador="${j.id}" style="--h:${matizNota(v)};--p:${v * 10}%" ${sit === 'nao-atuou' ? 'hidden' : ''}>
     ${avatarHTML(j, 'g')}
-    <span class="jog-nome"><b>${esc(j.nome)}</b><span class="sub">${j.numero ? `${j.numero}, ` : ''}${POS_UM[j.posicao]}</span></span>
+    <span class="jog-nome">
+      <span class="linha-nome">${numeroCamisaHTML(j)}<b>${esc(j.nome)}</b></span>
+      <span class="sub">${bandeiraHTML(j)}${POS_UM[j.posicao]}</span>
+    </span>
     <div class="regua-box">
       <input class="regua" type="range" min="0" max="10" step="0.5" value="${v}" data-regua aria-label="Nota de ${esc(j.nome)}">
       <span class="marcas" aria-hidden="true">${[0, 2, 4, 6, 8, 10].map((n) => `<i>${n}</i>`).join('')}</span>
     </div>
     <button type="button" class="valor-nota" data-limpar-nota title="Toque para apagar a nota">${a.nota != null ? fmtNota(a.nota) : '–'}</button>
-    <span class="ga-mini">
-      ${['gols', 'assist'].map((k) => `<span class="ga-par ${a[k] ? 'tem' : ''}"><button type="button" data-ga="${k}" data-delta="-1" aria-label="Menos ${k === 'gols' ? 'um gol' : 'uma assistência'}">−</button><span class="ga-v" data-v="${k}">${k === 'gols' ? 'G' : 'A'}${a[k] || 0}</span><button type="button" data-ga="${k}" data-delta="1" aria-label="Mais ${k === 'gols' ? 'um gol' : 'uma assistência'}">+</button></span>`).join('')}
-    </span>
+    <span class="ga-mini">${par('gols', '⚽', 'Gols')}${par('assist', '👟', 'Assistências')}</span>
     <button type="button" class="tirar" data-nao aria-label="${esc(j.nome)} não atuou" title="Não atuou">${ICONE_X}</button>
   </div>`;
 }
@@ -739,8 +781,9 @@ function atualizarLinha(id) {
   if (a.nota != null) { el.style.setProperty('--h', matizNota(a.nota)); el.style.setProperty('--p', a.nota * 10 + '%'); }
   el.querySelector('.valor-nota').textContent = a.nota != null ? fmtNota(a.nota) : '–';
   ['gols', 'assist'].forEach((k) => {
-    el.querySelector(`[data-v="${k}"]`).textContent = (k === 'gols' ? 'G' : 'A') + (a[k] || 0);
-    el.querySelector(`[data-v="${k}"]`).parentNode.classList.toggle('tem', !!a[k]);
+    const v = el.querySelector(`[data-v="${k}"]`);
+    v.textContent = a[k] || '';
+    v.closest('.ga-par').classList.toggle('tem', !!a[k]);
   });
   atualizarResumo();
 }
@@ -991,6 +1034,7 @@ function telaElenco() {
             <input type="number" data-campo="numero" data-id="${j.id}" value="${j.numero ?? ''}" min="1" max="99" placeholder="nº" aria-label="Número">
             <select data-campo="posicao" data-id="${j.id}" aria-label="Posição">${ORDEM_POS.map((p) => `<option value="${p}" ${p === j.posicao ? 'selected' : ''}>${POS_UM[p]}</option>`).join('')}</select>
           </div>
+          <select data-campo="pais" data-id="${j.id}" aria-label="Nacionalidade"><option value="">Nacionalidade</option>${Object.entries(PAISES).map(([c, n]) => `<option value="${c}" ${paisDe(j) === c ? 'selected' : ''}>${n}</option>`).join('')}</select>
           <label class="switch"><input type="checkbox" role="switch" data-campo="ativo" data-id="${j.id}" ${j.ativo !== false ? 'checked' : ''}><span class="sw" aria-hidden="true"></span><span class="sw-rot">No elenco</span></label>
         </div>
       </li>`).join('')}</ul></div>`).join('')}
@@ -1016,6 +1060,7 @@ function ligarElenco() {
     else if (k === 'numero') j.numero = parseInt(el.value, 10) || null;
     else if (k === 'nome') j.nome = el.value.trim() || j.nome;
     else if (k === 'posicao') j.posicao = el.value;
+    else if (k === 'pais') j.pais = el.value || null;
   });
   app.addEventListener('click', async (ev) => {
     const b = ev.target.closest('button');
