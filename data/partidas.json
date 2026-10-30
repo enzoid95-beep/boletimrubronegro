@@ -24,7 +24,7 @@
         },
         {
           "jogador": "varela",
-          "nota": 7.5,
+          "nota": 8,
           "gols": 0,
           "assist": 1
         },
@@ -38,12 +38,6 @@
           "jogador": "emerson-royal",
           "nota": 8,
           "gols": 0,
-          "assist": 0
-        },
-        {
-          "jogador": "samuel-lino",
-          "nota": 9.5,
-          "gols": 2,
           "assist": 0
         },
         {
@@ -66,8 +60,14 @@
         },
         {
           "jogador": "jorginho",
-          "nota": 7,
+          "nota": 7.5,
           "gols": 0,
+          "assist": 0
+        },
+        {
+          "jogador": "samuel-lino",
+          "nota": 9.5,
+          "gols": 2,
           "assist": 0
         },
         {
