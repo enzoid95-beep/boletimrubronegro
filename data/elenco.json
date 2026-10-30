@@ -17,27 +17,6 @@
       "ativo": true
     },
     {
-      "id": "dyogo-alves",
-      "nome": "Dyogo Alves",
-      "posicao": "GOL",
-      "numero": 49,
-      "ativo": true
-    },
-    {
-      "id": "gabriel-werneck",
-      "nome": "Gabriel Werneck",
-      "posicao": "GOL",
-      "numero": null,
-      "ativo": true
-    },
-    {
-      "id": "leo-nannetti",
-      "nome": "Léo Nannetti",
-      "posicao": "GOL",
-      "numero": null,
-      "ativo": true
-    },
-    {
       "id": "varela",
       "nome": "Varela",
       "posicao": "DEF",
@@ -91,48 +70,6 @@
       "nome": "Vitão",
       "posicao": "DEF",
       "numero": 44,
-      "ativo": true
-    },
-    {
-      "id": "daniel-sales",
-      "nome": "Daniel Sales",
-      "posicao": "DEF",
-      "numero": 51,
-      "ativo": true
-    },
-    {
-      "id": "joao-victor",
-      "nome": "João Victor",
-      "posicao": "DEF",
-      "numero": 71,
-      "ativo": true
-    },
-    {
-      "id": "johnny-goes",
-      "nome": "Johnny Góes",
-      "posicao": "DEF",
-      "numero": 77,
-      "ativo": true
-    },
-    {
-      "id": "daniel-silva",
-      "nome": "Daniel Silva",
-      "posicao": "DEF",
-      "numero": 87,
-      "ativo": true
-    },
-    {
-      "id": "gusttavo",
-      "nome": "Gusttavo",
-      "posicao": "DEF",
-      "numero": null,
-      "ativo": true
-    },
-    {
-      "id": "luiz-da-silva",
-      "nome": "Luiz da Silva",
-      "posicao": "DEF",
-      "numero": null,
       "ativo": true
     },
     {
@@ -199,62 +136,6 @@
       "ativo": true
     },
     {
-      "id": "pablo-lucio",
-      "nome": "Pablo Lúcio",
-      "posicao": "MEI",
-      "numero": 56,
-      "ativo": true
-    },
-    {
-      "id": "luiz-felipe",
-      "nome": "Luiz Felipe",
-      "posicao": "MEI",
-      "numero": 75,
-      "ativo": true
-    },
-    {
-      "id": "joshua",
-      "nome": "Joshua",
-      "posicao": "MEI",
-      "numero": 79,
-      "ativo": true
-    },
-    {
-      "id": "gabriel-amancio",
-      "nome": "Gabriel Amancio",
-      "posicao": "MEI",
-      "numero": null,
-      "ativo": true
-    },
-    {
-      "id": "jheferson-medino",
-      "nome": "Jheferson Medino",
-      "posicao": "MEI",
-      "numero": null,
-      "ativo": true
-    },
-    {
-      "id": "joao-couto",
-      "nome": "João Couto",
-      "posicao": "MEI",
-      "numero": null,
-      "ativo": true
-    },
-    {
-      "id": "kaio-nobrega",
-      "nome": "Kaio Nóbrega",
-      "posicao": "MEI",
-      "numero": null,
-      "ativo": true
-    },
-    {
-      "id": "sayago",
-      "nome": "Sayago",
-      "posicao": "MEI",
-      "numero": null,
-      "ativo": true
-    },
-    {
       "id": "luiz-araujo",
       "nome": "Luiz Araújo",
       "posicao": "ATA",
@@ -294,48 +175,6 @@
       "nome": "Joaquín Freitas",
       "posicao": "ATA",
       "numero": 30,
-      "ativo": true
-    },
-    {
-      "id": "josmar",
-      "nome": "Josmar",
-      "posicao": "ATA",
-      "numero": 39,
-      "ativo": true
-    },
-    {
-      "id": "alan-santos",
-      "nome": "Alan Santos",
-      "posicao": "ATA",
-      "numero": 59,
-      "ativo": true
-    },
-    {
-      "id": "douglas-telles",
-      "nome": "Douglas Telles",
-      "posicao": "ATA",
-      "numero": 81,
-      "ativo": true
-    },
-    {
-      "id": "isaac-gomes",
-      "nome": "Isaac Gomes",
-      "posicao": "ATA",
-      "numero": null,
-      "ativo": true
-    },
-    {
-      "id": "ramires",
-      "nome": "Ramires",
-      "posicao": "ATA",
-      "numero": null,
-      "ativo": true
-    },
-    {
-      "id": "reyes",
-      "nome": "Reyes",
-      "posicao": "ATA",
-      "numero": null,
       "ativo": true
     }
   ]

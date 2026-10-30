@@ -264,14 +264,17 @@ function confronto(jogo, tam = 'g', placar = null) {
   </div>`;
 }
 const placarDe = (p) => ({ casa: p.mandante ? p.golsFla : p.golsAdv, fora: p.mandante ? p.golsAdv : p.golsFla, classe: `r-${resultado(p)}` });
-const rotuloJogo = (j) => `${esc(j.competicao)}${j.rodada ? `, ${j.rodada}ª rodada` : ''}`;
+const rotuloJogo = (j) => `${esc(j.competicao)}${j.rodada ? `, ${j.rodada}${/^\d+$/.test(j.rodada) ? 'ª rodada' : ''}` : ''}`;
 const localJogo = (j) => [j.estadio, j.cidade].filter(Boolean).map(esc).join(', ');
+const tituloJogo = (j) => (j.mandante ? `Flamengo × ${esc(timeDe(j.adversario).nome)}` : `${esc(timeDe(j.adversario).nome)} × Flamengo`);
+const ICONE_VOLTAR = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>';
+const voltar = (href, texto) => `<a class="voltar" href="${href}">${ICONE_VOLTAR}${texto}</a>`;
 
 function cartaoProximo(c) {
-  return `<section class="proximo" aria-labelledby="t-prox">
-    <div class="proximo-topo">
+  return `<section class="card proximo" aria-labelledby="t-prox">
+    <div class="card-topo">
       <h2 id="t-prox">Próximo jogo</h2>
-      <span class="contagem-regressiva">${faltam(c.data)}</span>
+      <span class="pilula pilula-clara">${faltam(c.data)}</span>
     </div>
     ${confronto(c, 'g')}
     <dl class="ficha">
@@ -287,110 +290,121 @@ function telaJogos() {
   const prox = proximosJogos();
   const semNota = jogosSemNota();
   const ult = estado.partidas[0];
-  let html = '';
 
-  if (temToken() && semNota.length) {
-    html += semNota.map((c) => `<a class="alerta-nota" href="#/lancar/novo/${c.id}">
-      ${escudoHTML(c.adversario, 'p')}<span><b>${c.mandante ? 'Flamengo × ' + esc(c.adversario) : esc(c.adversario) + ' × Flamengo'}</b> já foi jogado. Lançar as notas</span></a>`).join('');
-  }
-  html += '<div class="topo-home">';
-  if (prox.length) html += cartaoProximo(prox[0]);
-  if (ult) {
+  const cta = temToken() && semNota.length
+    ? `<a class="card cta-notas" href="#/lancar/novo/${semNota[0].id}">
+        <div class="cta-escudos">${escudoHTML('Flamengo', 'm')}${escudoHTML(semNota[0].adversario, 'm')}</div>
+        <div><span class="rotulo">Jogo sem notas</span><b>${tituloJogo(semNota[0])}</b><span class="sub">${fmtData(semNota[0].data, 'semana')}</span></div>
+        <span class="botao">Dar as notas</span>
+      </a>` : '';
+
+  const ultimo = ult ? (() => {
     const d = destaques(ult);
-    const craque = jogador(d.craque[0]);
-    html += `<a class="ultimo" href="#/jogo/${ult.id}">
-      <div class="ultimo-topo"><h2>Último jogo</h2><span class="sub">${fmtData(ult.data, 'curto')}, ${esc(ult.competicao)}</span></div>
+    return `<a class="card ultimo" href="#/jogo/${ult.id}">
+      <div class="card-topo"><h2>Último jogo</h2><span class="sub">${fmtData(ult.data)}, ${esc(ult.competicao)}</span></div>
       ${confronto(ult, 'm', placarDe(ult))}
       <div class="craque-mini">
-        ${avatarHTML(craque, 'm')}
+        ${avatarHTML(jogador(d.craque[0]), 'm')}
         <div><span class="rotulo">Craque do jogo</span><b>${nomes(d.craque)}</b></div>
         ${notaHTML(d.max)}
       </div>
-      <span class="ver-notas">Ver todas as notas</span>
     </a>`;
-  } else if (!prox.length) {
-    html += `<div class="ultimo vazio-card"><p>Nenhum jogo avaliado ainda.</p><a class="botao" href="#/lancar">Lançar as primeiras notas</a></div>`;
-  }
-  html += '</div>';
+  })() : '';
 
-  if (prox.length > 1) {
-    html += `<section class="secao"><h2>O que falta na temporada</h2>
-      <ol class="calendario">${prox.slice(1).map((c) => `<li class="jogo-cal">
-        <span class="data-bloco"><b>${c.data.slice(8)}</b>${MESES[Number(c.data.slice(5, 7)) - 1]}</span>
-        ${escudoHTML(c.adversario, 'm')}
-        <span class="info"><b>${c.mandante ? '' : '<span class="mando-tag">fora</span>'}${esc(timeDe(c.adversario).nome)}</b>
-          <span>${DIAS[new Date(c.data + 'T12:00:00').getDay()]}, ${fmtHora(c.hora)}, ${localJogo(c) || 'local a definir'}</span></span>
-        <span class="rodada">${c.rodada ? `${c.rodada}ª` : esc(c.competicao)}</span>
-      </li>`).join('')}</ol>
-    </section>`;
-  }
+  const calendario = prox.length > 1 ? `<section class="card">
+    <div class="card-topo"><h2>O que falta</h2><span class="sub">${plural(prox.length, 'jogo', 'jogos')}</span></div>
+    <ol class="calendario">${prox.slice(1).map((c) => `<li class="jogo-cal">
+      <span class="data-bloco"><b>${c.data.slice(8)}</b>${MESES[Number(c.data.slice(5, 7)) - 1]}</span>
+      ${escudoHTML(c.adversario, 'm')}
+      <span class="info"><b>${esc(timeDe(c.adversario).nome)}${c.mandante ? '' : ' <span class="pilula pilula-mini">fora</span>'}</b>
+        <span>${DIAS[new Date(c.data + 'T12:00:00').getDay()]}, ${fmtHora(c.hora)}</span>
+        <span>${localJogo(c) || 'local a definir'}</span></span>
+    </li>`).join('')}</ol>
+  </section>` : '';
 
+  let resultados = '';
   if (estado.partidas.length) {
     const comps = competicoesUsadas();
     const lista = filtrarComp(estado.partidas, estado.filtroComp);
     const v = estado.partidas.filter((p) => resultado(p) === 'v').length;
     const e = estado.partidas.filter((p) => resultado(p) === 'e').length;
-    html += `<section class="secao">
-      <div class="secao-topo"><h2>Resultados avaliados</h2><span class="sub">${plural(v, 'vitória', 'vitórias')}, ${plural(e, 'empate', 'empates')}, ${plural(estado.partidas.length - v - e, 'derrota', 'derrotas')}</span></div>
-      ${comps.length > 1 ? `<div class="filtros" role="group" aria-label="Filtrar por competição">
-        ${['Todas', ...comps].map((c) => `<button class="chip" data-comp="${esc(c)}" aria-pressed="${estado.filtroComp === c}">${esc(c)}</button>`).join('')}
+    resultados = `<section class="secao">
+      <div class="secao-topo"><h2>Resultados</h2>
+        <span class="placar-temporada"><span class="r-v">${v}V</span><span>${e}E</span><span class="r-d">${estado.partidas.length - v - e}D</span></span></div>
+      ${comps.length > 1 ? `<div class="segmentos" role="group" aria-label="Filtrar por competição">
+        ${['Todas', ...comps].map((c) => `<button class="seg" data-comp="${esc(c)}" aria-pressed="${estado.filtroComp === c}">${esc(c)}</button>`).join('')}
       </div>` : ''}
-      <ul class="resultados">${lista.map((p) => {
+      <ul class="cards-resultado">${lista.map((p) => {
         const dd = destaques(p);
-        return `<li><a class="resultado" href="#/jogo/${p.id}">
-          <span class="faixa r-${resultado(p)}" title="${RES_TEXTO[resultado(p)]}"></span>
-          <span class="data">${fmtData(p.data)}</span>
-          ${escudoHTML(p.adversario, 'p')}
-          <span class="adv">${esc(timeDe(p.adversario).nome)}<span class="comp">${esc(p.competicao)}, ${p.mandante ? 'casa' : 'fora'}</span></span>
-          <span class="res r-${resultado(p)}">${p.golsFla}<small>×</small>${p.golsAdv}</span>
-          <span class="craque-col">${avatarHTML(jogador(dd.craque[0]), 'p')}<span><b>${nomes(dd.craque)}</b>${fmtNota(dd.max)}</span></span>
+        return `<li><a class="card card-resultado" href="#/jogo/${p.id}">
+          <div class="cr-topo">
+            ${escudoHTML(p.adversario, 'm')}
+            <div class="cr-adv"><b>${esc(timeDe(p.adversario).nome)}</b><span class="sub">${fmtData(p.data)}, ${esc(p.competicao)}, ${p.mandante ? 'casa' : 'fora'}</span></div>
+            <span class="res r-${resultado(p)}">${p.golsFla}<small>×</small>${p.golsAdv}</span>
+          </div>
+          <div class="cr-base">
+            ${avatarHTML(jogador(dd.craque[0]), 'p')}
+            <span><span class="rotulo">Craque</span>${nomes(dd.craque)}</span>
+            ${notaHTML(dd.max, 'pequena')}
+            <span class="cr-media"><span class="rotulo">Média</span>${fmtNota(dd.media)}</span>
+          </div>
         </a></li>`;
       }).join('')}</ul>
       ${lista.length ? '' : '<p class="vazio">Nenhum jogo nessa competição ainda.</p>'}
     </section>`;
   }
-  return html;
+
+  const vazio = !ult && !prox.length ? `<div class="card vazio-card"><p>Nenhum jogo avaliado ainda.</p><a class="botao" href="#/lancar">Dar as primeiras notas</a></div>` : '';
+  return `<div class="dash">
+    <div class="dash-principal">${cta}${prox.length ? cartaoProximo(prox[0]) : ''}${vazio}${resultados}</div>
+    <aside class="dash-lateral">${ultimo}${calendario}</aside>
+  </div>`;
 }
 
 function telaJogo(id) {
   const p = estado.partidas.find((x) => x.id === id);
-  if (!p) return `<a class="voltar" href="#/">‹ Jogos</a><p class="vazio">Esse jogo não está no boletim.</p>`;
+  if (!p) return `${voltar('#/', 'Jogos')}<p class="vazio">Esse jogo não está no boletim.</p>`;
   const d = destaques(p);
   const atu = [...p.atuacoes].sort((a, b) => b.nota - a.nota || ORDEM_POS.indexOf(jogador(a.jogador).posicao) - ORDEM_POS.indexOf(jogador(b.jogador).posicao));
-  const pessoa = (ids, nota, rotulo, cls) => `<div class="premio ${cls}">
+  const pessoa = (ids, nota, rotulo, cls) => `<div class="card premio ${cls}">
     <div class="premio-fotos">${ids.slice(0, 4).map((i) => avatarHTML(jogador(i), ids.length > 1 ? 'm' : 'g')).join('')}${ids.length > 4 ? `<span class="mais">+${ids.length - 4}</span>` : ''}</div>
-    <div><span class="rotulo">${rotulo}</span><b>${nomes(ids)}</b></div>
     ${notaHTML(nota)}
+    <div><span class="rotulo">${rotulo}</span><b>${nomes(ids)}</b></div>
   </div>`;
-  return `
-    <a class="voltar" href="#/">‹ Jogos</a>
-    <header class="placar-jogo">
-      <div class="sub">${fmtData(p.data, 'semana')}${p.hora ? `, ${fmtHora(p.hora)}` : ''}${localJogo(p) ? `, ${localJogo(p)}` : ''}</div>
-      ${confronto(p, 'g', placarDe(p))}
-      <div class="sub">${rotuloJogo(p)}, ${RES_TEXTO[resultado(p)].toLowerCase()} do Flamengo</div>
-      ${temToken() ? `<a class="botao sec" href="#/lancar/${p.id}">Editar notas</a>` : ''}
-    </header>
-    <div class="premios">
-      ${pessoa(d.craque, d.max, d.craque.length > 1 ? 'Craques do jogo' : 'Craque do jogo', 'premio-craque')}
-      ${d.pior.length ? pessoa(d.pior, d.min, 'Pior em campo', 'premio-pior') : ''}
-      <div class="premio premio-media"><span class="numero-grande">${fmtNota(d.media)}</span><div><span class="rotulo">Média do time</span><b>${plural(p.atuacoes.length, 'jogador avaliado', 'jogadores avaliados')}</b></div></div>
-    </div>
-    <h2 class="titulo-lista">Notas</h2>
-    <ul class="atuacoes">
-      ${atu.map((a) => {
-        const j = jogador(a.jogador);
-        const craque = d.craque.includes(a.jogador), pior = d.pior.includes(a.jogador);
-        const det = [POS_UM[j.posicao]];
-        if (a.gols) det.push(plural(a.gols, 'gol', 'gols'));
-        if (a.assist) det.push(plural(a.assist, 'assistência', 'assistências'));
-        return `<li><a class="atuacao ${craque ? 'craque' : ''}" href="#/jogador/${j.id}">
-          ${avatarHTML(j, 'm')}
-          <span class="quem"><b>${esc(j.nome)}</b>${craque ? '<span class="tag craque">Craque</span>' : ''}${pior ? '<span class="tag pior">Pior</span>' : ''}
-            <span class="det">${det.join(', ')}</span></span>
-          ${notaHTML(a.nota)}
-        </a></li>`;
-      }).join('')}
-    </ul>`;
+  return `${voltar('#/', 'Jogos')}
+    <div class="jogo-layout">
+      <div class="jogo-lateral">
+        <header class="card placar-jogo">
+          <div class="sub">${fmtData(p.data, 'semana')}${p.hora ? `, ${fmtHora(p.hora)}` : ''}${localJogo(p) ? `, ${localJogo(p)}` : ''}</div>
+          ${confronto(p, 'g', placarDe(p))}
+          <div class="sub">${rotuloJogo(p)}</div>
+          ${temToken() ? `<a class="botao sec" href="#/lancar/${p.id}">Editar notas</a>` : ''}
+        </header>
+        <div class="premios">
+          ${pessoa(d.craque, d.max, d.craque.length > 1 ? 'Craques do jogo' : 'Craque do jogo', 'premio-craque')}
+          ${d.pior.length ? pessoa(d.pior, d.min, 'Pior em campo', 'premio-pior') : ''}
+          <div class="card premio-media"><span class="numero-grande">${fmtNota(d.media)}</span><div><span class="rotulo">Média do time</span><b>${plural(p.atuacoes.length, 'jogador avaliado', 'jogadores avaliados')}</b></div></div>
+        </div>
+      </div>
+      <section class="card lista-notas">
+        <h2>Notas</h2>
+        <ul class="atuacoes">
+          ${atu.map((a) => {
+            const j = jogador(a.jogador);
+            const craque = d.craque.includes(a.jogador), pior = d.pior.includes(a.jogador);
+            const det = [POS_UM[j.posicao]];
+            if (a.gols) det.push(plural(a.gols, 'gol', 'gols'));
+            if (a.assist) det.push(plural(a.assist, 'assistência', 'assistências'));
+            return `<li><a class="atuacao ${craque ? 'craque' : ''}" href="#/jogador/${j.id}">
+              ${avatarHTML(j, 'm')}
+              <span class="quem"><b>${esc(j.nome)}</b>${craque ? '<span class="tag craque">Craque</span>' : ''}${pior ? '<span class="tag pior">Pior</span>' : ''}
+                <span class="det">${det.join(', ')}</span></span>
+              ${notaHTML(a.nota)}
+            </a></li>`;
+          }).join('')}
+        </ul>
+      </section>
+    </div>`;
 }
 
 function telaRanking() {
@@ -403,59 +417,63 @@ function telaRanking() {
   const linhas = todas.filter((s) => s.jogos >= r.minimo)
     .sort((a, b) => (r.ordem === 'nome' ? jogador(a.id).nome.localeCompare(jogador(b.id).nome) * r.dir : (a[r.ordem] - b[r.ordem]) * r.dir) || b.media - a.media);
   const podio = [...todas].filter((s) => s.jogos >= r.minimo).sort((a, b) => b.media - a.media || b.jogos - a.jogos).slice(0, 3);
-  const col = (chave, rotulo) => `<th scope="col"><button data-ordem="${chave}" data-ativo="${r.ordem === chave}">${rotulo}${r.ordem === chave ? (r.dir < 0 ? ' ▾' : ' ▴') : ''}</button></th>`;
+  const col = (chave, rotulo) => `<th scope="col"><button data-ordem="${chave}" data-ativo="${r.ordem === chave}">${rotulo}${r.ordem === chave ? `<svg class="seta ${r.dir < 0 ? 'baixo' : ''}" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg>` : ''}</button></th>`;
   return `
-    <h1 class="titulo-pagina">Ranking da temporada</h1>
-    <p class="sub">Média das notas em ${plural(partidas.length, 'jogo avaliado', 'jogos avaliados')}.</p>
-    <div class="ranking-controles">
-      <label class="campo">Competição
-        <select id="r-comp">${['Todas', ...competicoesUsadas()].map((c) => `<option ${c === r.comp ? 'selected' : ''}>${esc(c)}</option>`).join('')}</select>
-      </label>
-      <label class="campo">Mínimo de jogos
-        <select id="r-min">${Array.from({ length: maxJogos }, (_, i) => i + 1).map((n) => `<option value="${n}" ${n === r.minimo ? 'selected' : ''}>${n}</option>`).join('')}</select>
-      </label>
+    <div class="pagina-topo">
+      <div><h1 class="titulo-pagina">Ranking da temporada</h1>
+      <p class="sub">Média das notas em ${plural(partidas.length, 'jogo avaliado', 'jogos avaliados')}.</p></div>
+      <div class="ranking-controles">
+        <label class="campo">Competição
+          <select id="r-comp">${['Todas', ...competicoesUsadas()].map((c) => `<option ${c === r.comp ? 'selected' : ''}>${esc(c)}</option>`).join('')}</select>
+        </label>
+        <label class="campo">Mínimo de jogos
+          <select id="r-min">${Array.from({ length: maxJogos }, (_, i) => i + 1).map((n) => `<option value="${n}" ${n === r.minimo ? 'selected' : ''}>${n}</option>`).join('')}</select>
+        </label>
+      </div>
     </div>
-    ${podio.length ? `<ol class="podio">${podio.map((s, i) => {
-      const j = jogador(s.id);
-      return `<li class="degrau d${i + 1}"><a href="#/jogador/${j.id}">
-        <span class="lugar">${i + 1}º</span>
-        ${avatarHTML(j, i === 0 ? 'xg' : 'g')}
-        <b>${esc(j.nome)}</b>
-        ${notaHTML(s.media)}
-        <span class="sub">${plural(s.jogos, 'jogo', 'jogos')}</span>
-      </a></li>`;
-    }).join('')}</ol>` : ''}
-    <div class="tabela-scroll"><table>
-      <thead><tr><th scope="col">#</th>${col('nome', 'Jogador')}${col('jogos', 'Jogos')}${col('media', 'Média')}${col('gols', 'Gols')}${col('assist', 'Assist.')}${col('craque', 'Craque')}${col('pior', 'Pior')}</tr></thead>
-      <tbody>${linhas.map((s, i) => {
+    <div class="ranking-layout">
+      ${podio.length ? `<ol class="podio">${podio.map((s, i) => {
         const j = jogador(s.id);
-        return `<tr>
-          <td class="pos-rank">${i + 1}</td>
-          <td><a class="jog-cel" href="#/jogador/${j.id}">${avatarHTML(j, 'p')}${esc(j.nome)}</a></td>
-          <td>${s.jogos}</td><td>${notaHTML(s.media, 'pequena')}</td><td>${s.gols}</td><td>${s.assist}</td><td>${s.craque}</td><td>${s.pior}</td>
-        </tr>`;
-      }).join('')}</tbody>
-    </table></div>`;
+        return `<li class="degrau d${i + 1}"><a class="card" href="#/jogador/${j.id}">
+          <span class="lugar">${i + 1}º</span>
+          ${avatarHTML(j, i === 0 ? 'xg' : 'g')}
+          <b>${esc(j.nome)}</b>
+          ${notaHTML(s.media)}
+          <span class="sub">${plural(s.jogos, 'jogo', 'jogos')}</span>
+        </a></li>`;
+      }).join('')}</ol>` : ''}
+      <div class="card tabela-card"><div class="tabela-scroll"><table>
+        <thead><tr><th scope="col">#</th>${col('nome', 'Jogador')}${col('jogos', 'Jogos')}${col('media', 'Média')}${col('gols', 'Gols')}${col('assist', 'Assist.')}${col('craque', 'Craque')}${col('pior', 'Pior')}</tr></thead>
+        <tbody>${linhas.map((s, i) => {
+          const j = jogador(s.id);
+          return `<tr>
+            <td class="pos-rank">${i + 1}</td>
+            <td><a class="jog-cel" href="#/jogador/${j.id}">${avatarHTML(j, 'p')}${esc(j.nome)}</a></td>
+            <td>${s.jogos}</td><td>${notaHTML(s.media, 'pequena')}</td><td>${s.gols}</td><td>${s.assist}</td><td>${s.craque}</td><td>${s.pior}</td>
+          </tr>`;
+        }).join('')}</tbody>
+      </table></div></div>
+    </div>`;
 }
 
 function graficoEvolucao(pontos) {
-  const W = 900, H = 260, m = { e: 34, d: 14, t: 14, b: 30 };
+  const W = 900, H = 280, m = { e: 34, d: 14, t: 14, b: 30 };
   const iw = W - m.e - m.d, ih = H - m.t - m.b;
   const x = (i) => m.e + (pontos.length === 1 ? iw / 2 : (i * iw) / (pontos.length - 1));
   const y = (n) => m.t + ih - (n / 10) * ih;
-  const grade = [0, 2, 4, 6, 8, 10].map((n) => `<line x1="${m.e}" x2="${W - m.d}" y1="${y(n)}" y2="${y(n)}" stroke="var(--linha)"/><text x="${m.e - 8}" y="${y(n) + 4}" fill="var(--apagado)" font-size="12" text-anchor="end">${n}</text>`).join('');
+  const grade = [0, 2, 4, 6, 8, 10].map((n) => `<line x1="${m.e}" x2="${W - m.d}" y1="${y(n)}" y2="${y(n)}" stroke="rgba(255,255,255,.08)"/><text x="${m.e - 8}" y="${y(n) + 4}" fill="var(--apagado)" font-size="12" text-anchor="end">${n}</text>`).join('');
   const media = pontos.reduce((s, p) => s + p.nota, 0) / pontos.length;
   const caminho = pontos.map((p, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(p.nota).toFixed(1)}`).join(' ');
   const area = `${caminho} L${x(pontos.length - 1).toFixed(1)},${y(0)} L${x(0).toFixed(1)},${y(0)} Z`;
   const passo = Math.ceil(pontos.length / 8);
   return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Evolução das notas jogo a jogo">
-    <defs><linearGradient id="g-area" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--vermelho)" stop-opacity=".35"/><stop offset="1" stop-color="var(--vermelho)" stop-opacity="0"/></linearGradient></defs>
+    <defs><linearGradient id="g-area" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff1f38" stop-opacity=".4"/><stop offset="1" stop-color="#ff1f38" stop-opacity="0"/></linearGradient></defs>
     ${grade}
     ${pontos.length > 1 ? `<path d="${area}" fill="url(#g-area)"/>` : ''}
     <line x1="${m.e}" x2="${W - m.d}" y1="${y(media)}" y2="${y(media)}" stroke="var(--apagado)" stroke-dasharray="4 4"/>
     <text x="${m.e + 6}" y="${y(media) - 6}" fill="var(--apagado)" font-size="12">média ${fmtNota(media)}</text>
-    <path d="${caminho}" fill="none" stroke="var(--vermelho)" stroke-width="3" stroke-linejoin="round"/>
-    ${pontos.map((p, i) => `<a href="#/jogo/${p.id}"><circle cx="${x(i)}" cy="${y(p.nota)}" r="6" fill="${p.nota >= 7 ? 'var(--vermelho)' : 'var(--preto)'}" stroke="var(--vermelho)" stroke-width="2.5"><title>${fmtData(p.data)} × ${esc(p.adversario)}: ${fmtNota(p.nota)}</title></circle></a>
+    <path d="${caminho}" fill="none" stroke="#ff1f38" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+    ${pontos.map((p, i) => `<a href="#/jogo/${p.id}"><circle cx="${x(i)}" cy="${y(p.nota)}" r="6" fill="${p.nota >= 7 ? '#ff1f38' : '#120507'}" stroke="#ff1f38" stroke-width="2.5"><title>${fmtData(p.data)} × ${esc(p.adversario)}: ${fmtNota(p.nota)}</title></circle></a>
       ${i % passo === 0 ? `<text x="${x(i)}" y="${H - 8}" fill="var(--apagado)" font-size="11" text-anchor="middle">${fmtData(p.data)}</text>` : ''}`).join('')}
   </svg>`;
 }
@@ -463,44 +481,62 @@ function graficoEvolucao(pontos) {
 function telaJogador(id) {
   const j = jogador(id);
   const jogos = estado.partidas.filter((p) => p.atuacoes.some((a) => a.jogador === id));
-  const topo = `<a class="voltar" href="#/ranking">‹ Ranking</a>
-    <header class="jogador-topo">
+  const topo = `${voltar('#/ranking', 'Ranking')}
+    <header class="card jogador-topo">
       ${avatarHTML(j, 'xxg')}
       <div>
         <div class="sub">${POS_UM[j.posicao]}${j.numero ? `, camisa ${j.numero}` : ''}</div>
         <h1>${esc(j.nome)}</h1>
-      </div>
-    </header>`;
-  if (!jogos.length) return `${topo}<p class="vazio">Ainda sem notas nesta temporada.</p>`;
+      </div>`;
+  if (!jogos.length) return `${topo}</header><p class="vazio">Ainda sem notas nesta temporada.</p>`;
   const s = estatisticas(jogos).find((x) => x.id === id);
   const cron = [...jogos].reverse().map((p) => ({ ...p.atuacoes.find((a) => a.jogador === id), id: p.id, data: p.data, adversario: p.adversario }));
   const melhor = cron.reduce((a, b) => (b.nota > a.nota ? b : a));
   const ultimos = cron.slice(-5);
   return `${topo}
-    <div class="numeros">
-      <div><span class="numero-grande destaque-num">${fmtNota(s.media)}</span><span>média</span></div>
-      <div><span class="numero-grande">${s.jogos}</span><span>${s.jogos === 1 ? 'jogo' : 'jogos'}</span></div>
-      <div><span class="numero-grande">${s.gols}</span><span>${s.gols === 1 ? 'gol' : 'gols'}</span></div>
-      <div><span class="numero-grande">${s.assist}</span><span>${s.assist === 1 ? 'assistência' : 'assistências'}</span></div>
-      <div><span class="numero-grande">${s.craque}</span><span>vezes craque</span></div>
-      <div><span class="numero-grande">${fmtNota(melhor.nota)}</span><span>melhor nota, contra ${esc(timeDe(melhor.adversario).nome)}</span></div>
-    </div>
-    <div class="forma"><span class="sub">Últimos ${ultimos.length}</span>${ultimos.map((u) => notaHTML(u.nota, 'pequena')).join('')}</div>
-    <h2>Evolução</h2>
-    <div class="grafico">${graficoEvolucao(cron)}</div>
-    <h2>Jogo a jogo</h2>
-    <ul class="resultados">${jogos.map((p) => {
-      const a = p.atuacoes.find((x) => x.jogador === id);
-      const extra = [a.gols ? plural(a.gols, 'gol', 'gols') : '', a.assist ? plural(a.assist, 'assist.', 'assists.') : ''].filter(Boolean).join(', ');
-      return `<li><a class="resultado" href="#/jogo/${p.id}">
-        <span class="faixa r-${resultado(p)}"></span>
-        <span class="data">${fmtData(p.data)}</span>
-        ${escudoHTML(p.adversario, 'p')}
-        <span class="adv">${esc(timeDe(p.adversario).nome)}<span class="comp">${esc(p.competicao)}${extra ? `, ${extra}` : ''}</span></span>
-        <span class="res r-${resultado(p)}">${p.golsFla}<small>×</small>${p.golsAdv}</span>
-        ${notaHTML(a.nota, 'pequena')}
-      </a></li>`;
-    }).join('')}</ul>`;
+      <div class="numeros">
+        <div><span class="numero-grande destaque-num">${fmtNota(s.media)}</span><span>média</span></div>
+        <div><span class="numero-grande">${s.jogos}</span><span>${s.jogos === 1 ? 'jogo' : 'jogos'}</span></div>
+        <div><span class="numero-grande">${s.gols}</span><span>${s.gols === 1 ? 'gol' : 'gols'}</span></div>
+        <div><span class="numero-grande">${s.assist}</span><span>${s.assist === 1 ? 'assistência' : 'assistências'}</span></div>
+        <div><span class="numero-grande">${s.craque}</span><span>vezes craque</span></div>
+        <div><span class="numero-grande">${fmtNota(melhor.nota)}</span><span>melhor nota, contra ${esc(timeDe(melhor.adversario).nome)}</span></div>
+      </div>
+    </header>
+    <div class="jogador-layout">
+      <section class="card">
+        <div class="card-topo"><h2>Evolução</h2><div class="forma"><span class="sub">Últimos ${ultimos.length}</span>${ultimos.map((u) => notaHTML(u.nota, 'pequena')).join('')}</div></div>
+        <div class="grafico">${graficoEvolucao(cron)}</div>
+      </section>
+      <section class="card">
+        <h2>Jogo a jogo</h2>
+        <ul class="resultados">${jogos.map((p) => {
+          const a = p.atuacoes.find((x) => x.jogador === id);
+          const extra = [a.gols ? plural(a.gols, 'gol', 'gols') : '', a.assist ? plural(a.assist, 'assist.', 'assists.') : ''].filter(Boolean).join(', ');
+          return `<li><a class="resultado" href="#/jogo/${p.id}">
+            ${escudoHTML(p.adversario, 'p')}
+            <span class="adv">${esc(timeDe(p.adversario).nome)}<span class="comp">${fmtData(p.data)}, ${esc(p.competicao)}${extra ? `, ${extra}` : ''}</span></span>
+            <span class="res r-${resultado(p)}">${p.golsFla}<small>×</small>${p.golsAdv}</span>
+            ${notaHTML(a.nota, 'pequena')}
+          </a></li>`;
+        }).join('')}</ul>
+      </section>
+    </div>`;
+}
+
+/* ================= diálogo de confirmação ================= */
+function confirmar(mensagem, ok = 'Confirmar', perigo = false) {
+  return new Promise((resolve) => {
+    const dlg = document.createElement('dialog');
+    dlg.className = 'card dialogo';
+    dlg.innerHTML = `<p>${esc(mensagem)}</p><div class="botoes"><button class="botao sec" value="0">Cancelar</button><button class="botao ${perigo ? 'perigo' : ''}" value="1">${esc(ok)}</button></div>`;
+    document.body.appendChild(dlg);
+    const fim = (v) => { dlg.close(); dlg.remove(); resolve(v); };
+    dlg.addEventListener('cancel', (e) => { e.preventDefault(); fim(false); });
+    dlg.addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) fim(b.value === '1'); else if (e.target === dlg) fim(false); });
+    dlg.showModal();
+    dlg.querySelector('[value="1"]').focus();
+  });
 }
 
 /* ================= área do autor ================= */
@@ -510,27 +546,34 @@ function abasAutor(atual) {
 }
 
 function novoRascunho(jogoCal) {
-  const r = { id: null, calendarioId: null, data: hojeISO(), hora: null, adversario: '', mandante: true, competicao: 'Brasileirão', estadio: '', cidade: '', golsFla: 0, golsAdv: 0, atuacoes: {} };
+  const r = { id: null, calendarioId: null, data: hojeISO(), hora: null, adversario: '', mandante: true, competicao: 'Brasileirão', estadio: '', cidade: '', golsFla: 0, golsAdv: 0, atuacoes: {}, naoAtuou: {}, manual: !jogoCal };
   if (jogoCal) Object.assign(r, { calendarioId: jogoCal.id, data: jogoCal.data, hora: jogoCal.hora, adversario: timeDe(jogoCal.adversario).nome, mandante: jogoCal.mandante, competicao: jogoCal.competicao, rodada: jogoCal.rodada, estadio: jogoCal.estadio, cidade: jogoCal.cidade });
   return r;
 }
 function rascunhoDe(p) {
-  const atuacoes = {};
+  const atuacoes = {}, naoAtuou = {};
   p.atuacoes.forEach((a) => (atuacoes[a.jogador] = { nota: a.nota, gols: a.gols || 0, assist: a.assist || 0 }));
-  return { ...p, atuacoes };
+  estado.elenco.forEach((j) => { if (j.ativo !== false && !atuacoes[j.id]) naoAtuou[j.id] = true; });
+  return { ...p, atuacoes, naoAtuou };
 }
 function guardarRascunho() {
   try { localStorage.setItem(RASCUNHO_KEY, JSON.stringify(estado.rascunho)); } catch { /* segue em memória */ }
 }
 function precisaConexao() {
-  return `${abasAutor('conexao')}<p class="ajuda">Para usar a área do autor, conecte este navegador ao seu repositório.</p>${telaConexao()}`;
+  return `${abasAutor('conexao')}<p class="ajuda">Para dar notas, conecte este navegador ao seu repositório. É só uma vez.</p>${telaConexao()}`;
 }
+const jogadoresDoLancamento = (r) => estado.elenco.filter((j) => j.ativo !== false || r.atuacoes[j.id])
+  .sort((a, b) => ORDEM_POS.indexOf(a.posicao) - ORDEM_POS.indexOf(b.posicao) || (a.numero ?? 999) - (b.numero ?? 999));
+const temNota = (r, id) => r.atuacoes[id]?.nota != null;
+const situacao = (r, id) => (r.naoAtuou[id] ? 'nao-atuou' : temNota(r, id) ? 'com-nota' : 'pendente');
 
 function telaLancar(param, calId) {
   if (!temToken()) return precisaConexao();
   if (param === 'novo' && calId) {
     const c = estado.calendario.find((x) => x.id === calId);
     if (c && (!estado.rascunho || estado.rascunho.calendarioId !== calId)) { estado.rascunho = novoRascunho(c); guardarRascunho(); }
+  } else if (param === 'outro') {
+    if (!estado.rascunho || !estado.rascunho.manual || estado.rascunho.id) { estado.rascunho = novoRascunho(null); guardarRascunho(); }
   } else if (param && param !== 'novo') {
     const p = estado.partidas.find((x) => x.id === param);
     if (!p) return `${abasAutor('lancar')}<p class="vazio">Jogo não encontrado.</p>`;
@@ -538,164 +581,270 @@ function telaLancar(param, calId) {
   } else if (!estado.rascunho || estado.rascunho.id) {
     let salvo = null;
     try { salvo = JSON.parse(localStorage.getItem(RASCUNHO_KEY) || 'null'); } catch { salvo = null; }
-    estado.rascunho = salvo && !salvo.id ? salvo : novoRascunho(jogosSemNota()[0] || null);
+    const pend = jogosSemNota()[0];
+    estado.rascunho = salvo && !salvo.id ? salvo : pend ? novoRascunho(pend) : null;
   }
   const r = estado.rascunho;
-  const ativos = estado.elenco.filter((j) => j.ativo !== false || r.atuacoes[j.id]);
-  const comps = COMPETICOES.includes(r.competicao) ? COMPETICOES : [...COMPETICOES, r.competicao];
+  if (r) r.naoAtuou = r.naoAtuou || {};
+
   const abertos = jogosAbertos();
-  const jogoSel = r.adversario ? { ...r, adversario: r.adversario } : null;
+  const cartaoEscolha = (c) => {
+    const passou = c.data < hojeISO();
+    return `<a class="card escolha ${r && r.calendarioId === c.id ? 'selecionada' : ''}" href="#/lancar/novo/${c.id}" ${r && r.calendarioId === c.id ? 'aria-current="true"' : ''}>
+      <div class="escolha-escudos">${escudoHTML(c.mandante ? 'Flamengo' : c.adversario, 'p')}<span>×</span>${escudoHTML(c.mandante ? c.adversario : 'Flamengo', 'p')}</div>
+      <b>${esc(timeDe(c.adversario).nome)}</b>
+      <span class="sub">${fmtData(c.data)}, ${c.mandante ? 'casa' : 'fora'}</span>
+      <span class="pilula ${passou ? 'pilula-alerta' : ''}">${passou ? 'Sem notas' : faltam(c.data)}</span>
+    </a>`;
+  };
+  const escolher = r && r.id
+    ? `<div class="editando card"><span class="rotulo">Editando</span><b>${tituloJogo(r)}</b><span class="sub">${fmtData(r.data, 'semana')}</span><a class="link" href="#/lancar/novo">Trocar de jogo</a></div>`
+    : `<div class="trilho" role="list">
+        ${abertos.map(cartaoEscolha).join('')}
+        <a class="card escolha escolha-outro ${r && r.manual ? 'selecionada' : ''}" href="#/lancar/outro"><span class="mais-grande">+</span><b>Outro jogo</b><span class="sub">preencher à mão</span></a>
+      </div>`;
+
+  if (!r) {
+    return `${abasAutor('lancar')}
+      <h1 class="titulo-pagina">Dar notas</h1>
+      <p class="ajuda">Escolha a partida para começar.</p>${escolher}`;
+  }
+
+  const comps = COMPETICOES.includes(r.competicao) ? COMPETICOES : [...COMPETICOES, r.competicao];
+  const lista = jogadoresDoLancamento(r);
   return `${abasAutor('lancar')}
-    <h1 class="titulo-pagina">${r.id ? 'Editar notas' : 'Lançar notas'}</h1>
-    ${!r.id && abertos.length ? `<label class="campo campo-largo">Jogo do calendário
-      <select id="f-cal">
-        <option value="">Outro jogo (preencher à mão)</option>
-        ${abertos.map((c) => `<option value="${c.id}" ${r.calendarioId === c.id ? 'selected' : ''}>${fmtData(c.data)}: ${c.mandante ? 'Flamengo × ' + esc(timeDe(c.adversario).nome) : esc(timeDe(c.adversario).nome) + ' × Flamengo'}${c.data < hojeISO() ? ' (sem notas)' : ''}</option>`).join('')}
-      </select></label>` : ''}
-    <section class="painel painel-jogo">
-      ${jogoSel ? `<div class="previa-confronto">${confronto({ ...r, adversario: r.adversario }, 'm', { casa: r.mandante ? r.golsFla : r.golsAdv, fora: r.mandante ? r.golsAdv : r.golsFla })}</div>` : ''}
-      <div class="grade">
-        <label class="campo">Data<input type="date" id="f-data" value="${esc(r.data)}"></label>
-        <label class="campo">Adversário<input type="text" id="f-adv" value="${esc(r.adversario)}" placeholder="Ex.: Palmeiras" autocomplete="off" list="lista-times"></label>
-        <label class="campo">Competição<select id="f-comp">${comps.map((x) => `<option ${x === r.competicao ? 'selected' : ''}>${esc(x)}</option>`).join('')}</select></label>
-        <div class="campo">Local
-          <div class="mando" role="group" aria-label="Local do jogo">
-            <button type="button" data-mando="1" aria-pressed="${r.mandante}">Em casa</button>
-            <button type="button" data-mando="0" aria-pressed="${!r.mandante}">Fora</button>
-          </div>
-        </div>
-        <div class="campo">Placar
-          <div class="placar-campos">
-            <span>Fla</span><input type="number" id="f-gf" min="0" max="20" inputmode="numeric" value="${r.golsFla}" aria-label="Gols do Flamengo">
-            <span>×</span>
-            <input type="number" id="f-ga" min="0" max="20" inputmode="numeric" value="${r.golsAdv}" aria-label="Gols do adversário"><span>Adv</span>
-          </div>
-        </div>
-        <label class="campo">Estádio<input type="text" id="f-est" value="${esc(r.estadio || '')}" placeholder="Ex.: Maracanã" autocomplete="off"></label>
+    <div class="lancar-cabeca">
+      <h1 class="titulo-pagina">${r.id ? 'Editar notas' : 'Dar notas'}</h1>
+    </div>
+    ${escolher}
+
+    <section class="card painel-jogo">
+      <div class="placar-edit">
+        ${ladoPlacar(r, r.mandante ? 'fla' : 'adv')}
+        <span class="x">×</span>
+        ${ladoPlacar(r, r.mandante ? 'adv' : 'fla')}
       </div>
-      <datalist id="lista-times">${Object.values(estado.times).filter((t) => t.nome !== 'Flamengo').map((t) => `<option value="${esc(t.nome)}">`).join('')}</datalist>
+      <p class="sub meta-jogo">${r.adversario ? `${rotuloJogo(r)}, ${fmtData(r.data, 'semana')}${r.estadio ? `, ${esc(r.estadio)}` : ''}` : 'Preencha os detalhes da partida'}</p>
+      <details class="detalhes" ${r.manual && !r.adversario ? 'open' : ''}>
+        <summary>Detalhes da partida</summary>
+        <div class="grade">
+          <label class="campo">Adversário<input type="text" id="f-adv" value="${esc(r.adversario)}" placeholder="Ex.: Palmeiras" autocomplete="off" list="lista-times"></label>
+          <label class="campo">Data<input type="date" id="f-data" value="${esc(r.data)}"></label>
+          <label class="campo">Competição<select id="f-comp">${comps.map((x) => `<option ${x === r.competicao ? 'selected' : ''}>${esc(x)}</option>`).join('')}</select></label>
+          <div class="campo">Mando
+            <div class="segmentos" role="group" aria-label="Mando de campo">
+              <button type="button" class="seg" data-mando="1" aria-pressed="${r.mandante}">Em casa</button>
+              <button type="button" class="seg" data-mando="0" aria-pressed="${!r.mandante}">Fora</button>
+            </div>
+          </div>
+          <label class="campo">Estádio<input type="text" id="f-est" value="${esc(r.estadio || '')}" placeholder="Ex.: Maracanã" autocomplete="off"></label>
+        </div>
+        <datalist id="lista-times">${Object.values(estado.times).filter((t) => t.nome !== 'Flamengo').map((t) => `<option value="${esc(t.nome)}">`).join('')}</datalist>
+      </details>
     </section>
 
-    <section>
-      <p class="ajuda">Toque em quem entrou em campo e ajuste a nota de meio em meio ponto.</p>
-      ${ORDEM_POS.map((pos) => {
-        const grupo = ativos.filter((j) => j.posicao === pos);
-        if (!grupo.length) return '';
-        return `<div class="grupo-pos"><h3>${POSICOES[pos]}</h3>${grupo.map((j) => linhaJogador(j, r.atuacoes[j.id])).join('')}</div>`;
-      }).join('')}
-    </section>
+    <div class="lancar-topo">
+      <h2>Notas</h2>
+      <p class="sub">Toque na nota de cada jogador. Ligue “Não atuou” para quem não entrou em campo.</p>
+    </div>
+    ${ORDEM_POS.map((pos) => {
+      const grupo = lista.filter((j) => j.posicao === pos);
+      if (!grupo.length) return '';
+      return `<section class="grupo-pos"><h3>${POSICOES[pos]}</h3><div class="grade-jog">${grupo.map((j) => linhaJogador(j, r)).join('')}</div></section>`;
+    }).join('')}
 
-    <div class="barra-salvar">
-      <span class="contagem" id="contagem">${contagemTexto()}</span>
-      <div class="botoes">
-        ${r.id ? '<button class="botao perigo" id="f-excluir">Excluir jogo</button>' : '<button class="botao sec" id="f-limpar">Recomeçar</button>'}
-        <button class="botao" id="f-salvar">${r.id ? 'Salvar alterações' : 'Publicar notas'}</button>
+    <div class="barra-salvar card">
+      <div class="progresso-info">
+        <span id="contagem">${contagemTexto()}</span>
+        <span class="barra"><span id="barra-fill" style="width:${progresso()}%"></span></span>
       </div>
+      <button class="botao" id="f-salvar">${r.id ? 'Salvar alterações' : 'Salvar notas'}</button>
+    </div>
+    <div class="acoes-fim">
+      ${r.id ? '<button class="botao perigo" id="f-excluir">Excluir este jogo</button>' : '<button class="botao sec" id="f-limpar">Apagar o que preenchi</button>'}
     </div>`;
 }
-
-function linhaJogador(j, a) {
-  return `<div class="linha-jogador ${a ? 'ativo' : ''}" data-jogador="${j.id}">
-    <label class="entrou"><input type="checkbox" data-entrou ${a ? 'checked' : ''}>${avatarHTML(j, 'p')}<span><b>${esc(j.nome)}</b><span class="sub">${j.numero ? `camisa ${j.numero}` : POS_UM[j.posicao]}</span></span></label>
-    <div class="controles">
-      <div class="stepper" aria-label="Nota de ${esc(j.nome)}">
-        <button type="button" data-passo="nota" data-delta="-0.5" aria-label="Diminuir nota">−</button>
-        <span class="valor">${notaHTML(a ? a.nota : NOTA_PADRAO)}</span>
-        <button type="button" data-passo="nota" data-delta="0.5" aria-label="Aumentar nota">+</button>
-      </div>
-      <div class="stepper mini"><span class="rot">Gols</span>
-        <button type="button" data-passo="gols" data-delta="-1" aria-label="Menos um gol">−</button>
-        <span class="valor" data-v="gols">${a ? a.gols : 0}</span>
-        <button type="button" data-passo="gols" data-delta="1" aria-label="Mais um gol">+</button>
-      </div>
-      <div class="stepper mini"><span class="rot">Assist.</span>
-        <button type="button" data-passo="assist" data-delta="-1" aria-label="Menos uma assistência">−</button>
-        <span class="valor" data-v="assist">${a ? a.assist : 0}</span>
-        <button type="button" data-passo="assist" data-delta="1" aria-label="Mais uma assistência">+</button>
-      </div>
+function ladoPlacar(r, quem) {
+  const nome = quem === 'fla' ? 'Flamengo' : r.adversario || 'Adversário';
+  const v = quem === 'fla' ? r.golsFla : r.golsAdv;
+  return `<div class="lado-placar">
+    ${escudoHTML(nome, 'g')}
+    <span class="nome-time">${esc(timeDe(nome).nome)}</span>
+    <div class="contador" role="group" aria-label="Gols do ${esc(nome)}">
+      <button type="button" class="redondo" data-placar="${quem}" data-delta="-1" aria-label="Menos um gol">−</button>
+      <span class="contador-valor" data-placar-valor="${quem}">${v}</span>
+      <button type="button" class="redondo" data-placar="${quem}" data-delta="1" aria-label="Mais um gol">+</button>
     </div>
   </div>`;
 }
+function badgesGA(a) {
+  if (!a) return '';
+  return `${a.gols ? `<span class="ga ga-gol">${a.gols > 1 ? a.gols + ' ' : ''}gol${a.gols > 1 ? 's' : ''}</span>` : ''}${a.assist ? `<span class="ga">${a.assist > 1 ? a.assist + ' ' : ''}assist.</span>` : ''}`;
+}
+function linhaJogador(j, r) {
+  const a = r.atuacoes[j.id];
+  const sit = situacao(r, j.id);
+  return `<div class="card jog ${sit}" data-jogador="${j.id}">
+    ${avatarHTML(j, 'm')}
+    <div class="jog-info"><b>${esc(j.nome)}</b><span class="sub">${j.numero ? `camisa ${j.numero}` : POS_UM[j.posicao]}</span><span class="badges">${badgesGA(a)}</span></div>
+    <button type="button" class="nota-btn" data-abrir ${sit === 'nao-atuou' ? 'disabled' : ''} aria-label="Nota de ${esc(j.nome)}">
+      ${temNota(r, j.id) ? notaHTML(a.nota) : '<span class="nota-vazia">Nota</span>'}
+    </button>
+    <label class="switch"><input type="checkbox" role="switch" data-nao ${sit === 'nao-atuou' ? 'checked' : ''}><span class="sw" aria-hidden="true"></span><span class="sw-rot">Não atuou</span></label>
+  </div>`;
+}
+function contar() {
+  const r = estado.rascunho;
+  const lista = jogadoresDoLancamento(r);
+  const com = lista.filter((j) => situacao(r, j.id) === 'com-nota').length;
+  const nao = lista.filter((j) => situacao(r, j.id) === 'nao-atuou').length;
+  return { total: lista.length, com, nao, pend: lista.length - com - nao };
+}
+const progresso = () => { const c = contar(); return c.total ? Math.round(((c.com + c.nao) / c.total) * 100) : 0; };
 function contagemTexto() {
-  const n = Object.keys(estado.rascunho?.atuacoes || {}).length;
-  return n ? `${plural(n, 'jogador avaliado', 'jogadores avaliados')}` : 'Nenhum jogador marcado';
+  const c = contar();
+  return `${plural(c.com, 'nota', 'notas')}, ${c.nao} não ${c.nao === 1 ? 'atuou' : 'atuaram'}, ${plural(c.pend, 'pendente', 'pendentes')}`;
+}
+function atualizarLinha(id) {
+  const r = estado.rascunho;
+  const el = document.querySelector(`.jog[data-jogador="${id}"]`);
+  if (!el) return;
+  const novo = document.createElement('div');
+  novo.innerHTML = linhaJogador(jogador(id), r);
+  el.replaceWith(novo.firstElementChild);
+  $('#contagem').textContent = contagemTexto();
+  $('#barra-fill').style.width = progresso() + '%';
+}
+
+/* folha de notas: escolher a nota com um toque e seguir para o próximo */
+const VALORES_NOTA = Array.from({ length: 21 }, (_, i) => i / 2);
+function abrirFolha(id) {
+  const r = estado.rascunho;
+  const lista = jogadoresDoLancamento(r);
+  let atual = id;
+  const dlg = document.createElement('dialog');
+  dlg.className = 'card folha';
+  document.body.appendChild(dlg);
+  const desenhar = () => {
+    const j = jogador(atual);
+    const a = r.atuacoes[atual] || { nota: null, gols: 0, assist: 0 };
+    const idx = lista.findIndex((x) => x.id === atual);
+    dlg.innerHTML = `
+      <div class="folha-topo">
+        <button class="redondo" data-ir="-1" aria-label="Jogador anterior" ${idx <= 0 ? 'disabled' : ''}>${ICONE_VOLTAR}</button>
+        <div class="folha-quem">${avatarHTML(j, 'g')}<div><b>${esc(j.nome)}</b><span class="sub">${POS_UM[j.posicao]}${j.numero ? `, camisa ${j.numero}` : ''}</span></div></div>
+        <button class="redondo" data-ir="1" aria-label="Próximo jogador" ${idx >= lista.length - 1 ? 'disabled' : ''}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
+      </div>
+      <div class="folha-extra">
+        ${['gols', 'assist'].map((k) => `<div class="contador contador-mini"><span class="rotulo">${k === 'gols' ? 'Gols' : 'Assistências'}</span>
+          <button class="redondo" data-ga="${k}" data-delta="-1" aria-label="Diminuir">−</button><span class="contador-valor">${a[k] || 0}</span><button class="redondo" data-ga="${k}" data-delta="1" aria-label="Aumentar">+</button></div>`).join('')}
+      </div>
+      <div class="grade-notas">${VALORES_NOTA.map((v) => `<button class="chip-nota ${classeNota(v)} ${a.nota === v ? 'ativa' : ''}" data-nota="${v}">${fmtNota(v)}</button>`).join('')}</div>
+      <div class="folha-rodape">
+        <button class="botao sec" data-acao="nao">Não atuou</button>
+        ${a.nota != null ? '<button class="botao sec" data-acao="limpar">Limpar nota</button>' : ''}
+        <button class="botao" data-acao="fechar">Pronto</button>
+      </div>`;
+  };
+  const fechar = () => { dlg.close(); dlg.remove(); };
+  const proximoPendente = () => {
+    const idx = lista.findIndex((x) => x.id === atual);
+    return lista.slice(idx + 1).find((x) => situacao(r, x.id) === 'pendente');
+  };
+  dlg.addEventListener('click', (e) => {
+    if (e.target === dlg) return fechar();
+    const b = e.target.closest('button');
+    if (!b) return;
+    if (b.dataset.ir) { const idx = lista.findIndex((x) => x.id === atual) + Number(b.dataset.ir); if (lista[idx]) { atual = lista[idx].id; desenhar(); } return; }
+    if (b.dataset.ga) {
+      const a = (r.atuacoes[atual] = r.atuacoes[atual] || { nota: null, gols: 0, assist: 0 });
+      a[b.dataset.ga] = Math.max(0, (a[b.dataset.ga] || 0) + Number(b.dataset.delta));
+      delete r.naoAtuou[atual];
+      guardarRascunho(); atualizarLinha(atual); desenhar(); return;
+    }
+    if (b.dataset.nota !== undefined) {
+      const a = (r.atuacoes[atual] = r.atuacoes[atual] || { nota: null, gols: 0, assist: 0 });
+      a.nota = Number(b.dataset.nota);
+      delete r.naoAtuou[atual];
+      guardarRascunho(); atualizarLinha(atual);
+      dlg.querySelectorAll('.chip-nota').forEach((c) => c.classList.toggle('ativa', c === b));
+      const prox = proximoPendente();
+      setTimeout(() => { if (prox) { atual = prox.id; desenhar(); } else fechar(); }, 180);
+      return;
+    }
+    const acao = b.dataset.acao;
+    if (acao === 'fechar') return fechar();
+    if (acao === 'limpar') { if (r.atuacoes[atual]) r.atuacoes[atual].nota = null; guardarRascunho(); atualizarLinha(atual); desenhar(); }
+    if (acao === 'nao') {
+      r.naoAtuou[atual] = true; delete r.atuacoes[atual];
+      guardarRascunho(); atualizarLinha(atual);
+      const prox = proximoPendente();
+      if (prox) { atual = prox.id; desenhar(); } else fechar();
+    }
+  });
+  dlg.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+      const idx = lista.findIndex((x) => x.id === atual) + (e.key === 'ArrowRight' ? 1 : -1);
+      if (lista[idx]) { atual = lista[idx].id; desenhar(); }
+    }
+  });
+  dlg.addEventListener('close', () => dlg.remove());
+  desenhar();
+  dlg.showModal();
 }
 
 function ligarLancar() {
   const app = $('#app');
   const r = estado.rascunho;
   if (!r) return;
-  const atualizarPrevia = () => {
-    const el = $('.previa-confronto', app);
-    if (el && r.adversario) el.innerHTML = confronto(r, 'm', { casa: r.mandante ? r.golsFla : r.golsAdv, fora: r.mandante ? r.golsAdv : r.golsFla });
+  const meta = () => {
+    const el = $('.meta-jogo', app);
+    if (el) el.innerHTML = r.adversario ? `${rotuloJogo(r)}, ${fmtData(r.data, 'semana')}${r.estadio ? `, ${esc(r.estadio)}` : ''}` : 'Preencha os detalhes da partida';
   };
-  const ligarCampo = (sel, chave, conv = (v) => v) => {
+  const ligarCampo = (sel, chave, conv = (v) => v, redesenhar = false) => {
     const el = $(sel, app);
-    if (el) el.addEventListener('input', () => { r[chave] = conv(el.value); guardarRascunho(); atualizarPrevia(); });
+    if (el) el.addEventListener(redesenhar ? 'change' : 'input', () => {
+      r[chave] = conv(el.value); guardarRascunho(); meta();
+      if (redesenhar) { const lados = app.querySelectorAll('.lado-placar'); const nl = [r.mandante ? 'fla' : 'adv', r.mandante ? 'adv' : 'fla']; lados.forEach((l, i) => { const t = document.createElement('div'); t.innerHTML = ladoPlacar(r, nl[i]); l.replaceWith(t.firstElementChild); }); }
+    });
   };
   ligarCampo('#f-data', 'data');
-  ligarCampo('#f-adv', 'adversario', (v) => v.trim());
+  ligarCampo('#f-adv', 'adversario', (v) => v.trim(), true);
   ligarCampo('#f-comp', 'competicao');
   ligarCampo('#f-est', 'estadio', (v) => v.trim());
-  ligarCampo('#f-gf', 'golsFla', (v) => Math.max(0, parseInt(v, 10) || 0));
-  ligarCampo('#f-ga', 'golsAdv', (v) => Math.max(0, parseInt(v, 10) || 0));
-  const sel = $('#f-cal', app);
-  if (sel) sel.addEventListener('change', () => {
-    const c = estado.calendario.find((x) => x.id === sel.value);
-    const atuacoes = r.atuacoes;
-    estado.rascunho = Object.assign(novoRascunho(c || null), { atuacoes });
-    guardarRascunho(); render();
-  });
 
   app.addEventListener('click', async (ev) => {
     const alvo = ev.target.closest('button');
     if (!alvo) return;
+    if (alvo.dataset.placar) {
+      const k = alvo.dataset.placar === 'fla' ? 'golsFla' : 'golsAdv';
+      r[k] = Math.max(0, Math.min(20, r[k] + Number(alvo.dataset.delta)));
+      $(`[data-placar-valor="${alvo.dataset.placar}"]`, app).textContent = r[k];
+      guardarRascunho(); return;
+    }
     if (alvo.dataset.mando) {
       r.mandante = alvo.dataset.mando === '1';
-      app.querySelectorAll('[data-mando]').forEach((b) => b.setAttribute('aria-pressed', b === alvo));
-      guardarRascunho(); atualizarPrevia();
+      guardarRascunho(); render(); return;
     }
-    if (alvo.dataset.passo) {
-      const linha = alvo.closest('[data-jogador]');
-      const a = r.atuacoes[linha.dataset.jogador];
-      if (!a) return;
-      const campo = alvo.dataset.passo, delta = Number(alvo.dataset.delta);
-      if (campo === 'nota') {
-        a.nota = Math.min(10, Math.max(0, a.nota + delta));
-        $('.stepper .valor', linha).innerHTML = notaHTML(a.nota);
-      } else {
-        a[campo] = Math.max(0, a[campo] + delta);
-        $(`[data-v="${campo}"]`, linha).textContent = a[campo];
-      }
-      guardarRascunho();
-    }
+    if (alvo.hasAttribute('data-abrir')) return abrirFolha(alvo.closest('[data-jogador]').dataset.jogador);
     if (alvo.id === 'f-limpar') {
-      if (!confirm('Apagar tudo o que foi preenchido neste lançamento?')) return;
-      estado.rascunho = novoRascunho(null); guardarRascunho(); render();
+      if (!(await confirmar('Apagar todas as notas preenchidas neste jogo?', 'Apagar', true))) return;
+      r.atuacoes = {}; r.naoAtuou = {}; r.golsFla = 0; r.golsAdv = 0; guardarRascunho(); render();
     }
     if (alvo.id === 'f-salvar') salvarPartida(alvo);
     if (alvo.id === 'f-excluir') excluirPartida(alvo);
   });
-
   app.addEventListener('change', (ev) => {
-    if (!ev.target.matches('[data-entrou]')) return;
-    const linha = ev.target.closest('[data-jogador]');
-    const id = linha.dataset.jogador;
-    if (ev.target.checked) r.atuacoes[id] = r.atuacoes[id] || { nota: NOTA_PADRAO, gols: 0, assist: 0 };
-    else delete r.atuacoes[id];
-    linha.classList.toggle('ativo', ev.target.checked);
-    const a = r.atuacoes[id];
-    $('.stepper .valor', linha).innerHTML = notaHTML(a ? a.nota : NOTA_PADRAO);
-    $('[data-v="gols"]', linha).textContent = a ? a.gols : 0;
-    $('[data-v="assist"]', linha).textContent = a ? a.assist : 0;
-    $('#contagem').textContent = contagemTexto();
-    guardarRascunho();
+    if (!ev.target.matches('[data-nao]')) return;
+    const id = ev.target.closest('[data-jogador]').dataset.jogador;
+    if (ev.target.checked) { r.naoAtuou[id] = true; delete r.atuacoes[id]; } else delete r.naoAtuou[id];
+    guardarRascunho(); atualizarLinha(id);
   });
 }
 
 function montarPartida() {
   const r = estado.rascunho;
-  const atuacoes = Object.entries(r.atuacoes).map(([j, a]) => ({ jogador: j, nota: a.nota, gols: a.gols, assist: a.assist }))
+  const atuacoes = Object.entries(r.atuacoes).filter(([, a]) => a.nota != null).map(([j, a]) => ({ jogador: j, nota: a.nota, gols: a.gols || 0, assist: a.assist || 0 }))
     .sort((a, b) => ORDEM_POS.indexOf(jogador(a.jogador).posicao) - ORDEM_POS.indexOf(jogador(b.jogador).posicao));
   let id = r.id;
   if (!id) {
@@ -709,28 +858,34 @@ function montarPartida() {
 }
 async function salvarPartida(botao) {
   const r = estado.rascunho;
+  if (!r.adversario) { const d = $('.detalhes'); if (d) d.open = true; $('#f-adv')?.focus(); return avisar('Escreva o nome do adversário nos detalhes da partida.', true); }
   if (!r.data) return avisar('Escolha a data do jogo.', true);
-  if (!r.adversario) return avisar('Escreva o nome do adversário.', true);
-  if (!Object.keys(r.atuacoes).length) return avisar('Marque pelo menos um jogador que entrou em campo.', true);
+  const c = contar();
+  if (!c.com) return avisar('Dê nota para pelo menos um jogador.', true);
+  if (c.pend && !(await confirmar(`${plural(c.pend, 'jogador está', 'jogadores estão')} sem nota e ${c.pend === 1 ? 'será salvo' : 'serão salvos'} como “não atuou”.`, 'Salvar assim'))) {
+    const primeiro = document.querySelector('.jog.pendente');
+    if (primeiro) primeiro.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
   const p = montarPartida();
   const lista = estado.partidas.filter((x) => x.id !== p.id).concat(p).sort((a, b) => b.data.localeCompare(a.data));
-  botao.disabled = true; botao.textContent = 'Publicando…';
+  botao.disabled = true; botao.textContent = 'Salvando…';
   try {
     await gravarDados('partidas', { ...estado.meta.partidas, temporada: estado.temporada, partidas: lista }, `${r.id ? 'Edita' : 'Notas de'} ${p.data} × ${p.adversario}`);
     estado.partidas = lista;
     const editando = !!r.id;
     estado.rascunho = null;
     try { localStorage.removeItem(RASCUNHO_KEY); } catch { /* ok */ }
-    avisar(editando ? 'Alterações salvas. O site atualiza em cerca de 1 minuto.' : 'Notas publicadas. O site atualiza em cerca de 1 minuto.');
+    avisar(editando ? 'Alterações salvas. O site atualiza em cerca de 1 minuto.' : 'Notas salvas. O site atualiza em cerca de 1 minuto.');
     location.hash = `#/jogo/${p.id}`;
   } catch (e) {
     avisar(explicarErro(e), true);
-    botao.disabled = false; botao.textContent = r.id ? 'Salvar alterações' : 'Publicar notas';
+    botao.disabled = false; botao.textContent = r.id ? 'Salvar alterações' : 'Salvar notas';
   }
 }
 async function excluirPartida(botao) {
   const r = estado.rascunho;
-  if (!confirm(`Excluir o jogo contra ${r.adversario} e todas as notas dele?`)) return;
+  if (!(await confirmar(`Excluir o jogo contra ${r.adversario} e todas as notas dele?`, 'Excluir', true))) return;
   const lista = estado.partidas.filter((x) => x.id !== r.id);
   botao.disabled = true;
   try {
@@ -755,7 +910,7 @@ function telaCalendario() {
 }
 function linhaCal(c, i) {
   const feito = partidaDoJogo(c);
-  return `<div class="cal-linha ${feito ? 'feito' : ''}" data-i="${i}">
+  return `<div class="card cal-linha ${feito ? 'feito' : ''}" data-i="${i}">
     ${escudoHTML(c.adversario, 'm')}
     <div class="grade grade-cal">
       <label class="campo">Adversário<input type="text" data-k="adversario" value="${esc(c.adversario)}" list="lista-times-cal"></label>
@@ -765,10 +920,10 @@ function linhaCal(c, i) {
       <label class="campo">Rodada ou fase<input type="text" data-k="rodada" value="${esc(c.rodada ?? '')}"></label>
       <label class="campo">Estádio<input type="text" data-k="estadio" value="${esc(c.estadio || '')}"></label>
       <label class="campo">Cidade<input type="text" data-k="cidade" value="${esc(c.cidade || '')}"></label>
-      <label class="campo campo-check"><input type="checkbox" data-k="mandante" ${c.mandante ? 'checked' : ''}> Flamengo é mandante</label>
+      <label class="switch campo-switch"><input type="checkbox" role="switch" data-k="mandante" ${c.mandante ? 'checked' : ''}><span class="sw" aria-hidden="true"></span><span class="sw-rot">Flamengo é mandante</span></label>
     </div>
     <div class="cal-acoes">${feito ? `<a class="sub" href="#/jogo/${feito.id}">Com notas</a>` : `<a class="botao sec mini-botao" href="#/lancar/novo/${c.id}">Lançar notas</a>`}
-      <button class="link-perigo" data-remover="${i}">Remover</button></div>
+      <button class="botao sec mini-botao" data-remover="${i}">Remover</button></div>
     ${i === 0 ? `<datalist id="lista-times-cal">${Object.values(estado.times).filter((t) => t.nome !== 'Flamengo').map((t) => `<option value="${esc(t.nome)}">`).join('')}</datalist>` : ''}
   </div>`;
 }
@@ -789,7 +944,7 @@ function ligarCalendario() {
     if (!b) return;
     if (b.dataset.remover !== undefined) {
       const c = estado.calendario[Number(b.dataset.remover)];
-      if (!confirm(`Remover ${c.adversario} (${fmtData(c.data)}) do calendário?`)) return;
+      if (!(await confirmar(`Remover ${c.adversario} (${fmtData(c.data)}) do calendário?`, 'Remover', true))) return;
       estado.calendario.splice(Number(b.dataset.remover), 1); render();
     }
     if (b.id === 'cal-add') {
@@ -826,10 +981,10 @@ function telaElenco() {
             <input type="number" data-campo="numero" data-id="${j.id}" value="${j.numero ?? ''}" min="1" max="99" placeholder="nº" aria-label="Número">
             <select data-campo="posicao" data-id="${j.id}" aria-label="Posição">${ORDEM_POS.map((p) => `<option value="${p}" ${p === j.posicao ? 'selected' : ''}>${POS_UM[p]}</option>`).join('')}</select>
           </div>
-          <label class="campo-check"><input type="checkbox" data-campo="ativo" data-id="${j.id}" ${j.ativo !== false ? 'checked' : ''}> No elenco</label>
+          <label class="switch"><input type="checkbox" role="switch" data-campo="ativo" data-id="${j.id}" ${j.ativo !== false ? 'checked' : ''}><span class="sw" aria-hidden="true"></span><span class="sw-rot">No elenco</span></label>
         </div>
       </li>`).join('')}</ul></div>`).join('')}
-    <section class="painel" style="margin-top:1.5rem">
+    <section class="card painel" style="margin-top:1.5rem">
       <h2>Novo jogador</h2>
       <div class="grade">
         <label class="campo">Nome<input type="text" id="e-nome" autocomplete="off"></label>
@@ -838,7 +993,7 @@ function telaElenco() {
       </div>
       <button class="botao sec" id="e-add" style="margin-top:1rem">Adicionar ao elenco</button>
     </section>
-    <div class="barra-salvar"><span class="contagem">${plural(estado.elenco.filter((j) => j.ativo !== false).length, 'jogador no elenco', 'jogadores no elenco')}</span>
+    <div class="barra-salvar card"><span class="contagem">${plural(estado.elenco.filter((j) => j.ativo !== false).length, 'jogador no elenco', 'jogadores no elenco')}</span>
       <div class="botoes"><button class="botao" id="e-salvar">Salvar elenco</button></div></div>`;
 }
 function ligarElenco() {
@@ -929,7 +1084,7 @@ function abrirEditorImagem({ titulo, modo, aoSalvar }) {
 function montarEditor(img, titulo, modo, aoSalvar) {
   const TAM = modo === 'foto' ? 480 : 256;
   const dlg = document.createElement('dialog');
-  dlg.className = 'editor';
+  dlg.className = 'card editor';
   dlg.innerHTML = `<h2>${esc(titulo)}</h2>
     <p class="ajuda">${modo === 'foto' ? 'Arraste para enquadrar do pescoço para cima e use o zoom.' : 'Ajuste o tamanho do escudo dentro do círculo.'}</p>
     <div class="editor-palco ${modo}"><canvas width="${TAM}" height="${TAM}"></canvas></div>
@@ -973,7 +1128,7 @@ function montarEditor(img, titulo, modo, aoSalvar) {
 /* ---------- conexão ---------- */
 function telaConexao() {
   const c = lerConfig();
-  return `<section class="painel">
+  return `<section class="card painel">
     <h2>Conexão com o GitHub ${c.token ? '<span class="tag craque">conectado</span>' : ''}</h2>
     <div class="grade">
       <label class="campo">Usuário dono do repositório<input type="text" id="c-dono" value="${esc(c.dono || '')}" autocomplete="off" spellcheck="false"></label>

@@ -5,25 +5,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Boletim Rubro-Negro</title>
   <meta name="description" content="Notas de cada jogador do Flamengo, partida a partida.">
-  <meta name="theme-color" content="#000000">
+  <meta name="theme-color" content="#2a0007">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%23000'/><rect y='6' width='32' height='5' fill='%23E2001A'/><rect y='16' width='32' height='5' fill='%23E2001A'/><rect y='26' width='32' height='5' fill='%23E2001A'/></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Big+Shoulders+Display:wght@700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <a class="pular" href="#app">Pular para o conteúdo</a>
   <header class="topo">
-    <div class="listras" aria-hidden="true"></div>
-    <div class="topo-conteudo">
-      <a href="#/" class="marca">Boletim<br>Rubro-Negro</a>
-      <nav class="nav" aria-label="Principal">
-        <a href="#/" data-nav="jogos">Jogos</a>
-        <a href="#/ranking" data-nav="ranking">Ranking</a>
-        <a href="#/lancar" data-nav="autor" class="so-autor" hidden>Área do autor</a>
-      </nav>
-    </div>
+    <a href="#/" class="marca"><span class="marca-icone" aria-hidden="true"></span><span>Boletim<br>Rubro-Negro</span></a>
+    <nav class="nav" aria-label="Principal">
+      <a href="#/" data-nav="jogos">Jogos</a>
+      <a href="#/ranking" data-nav="ranking">Ranking</a>
+      <a href="#/lancar" data-nav="autor" class="so-autor nav-destaque" hidden>Dar notas</a>
+    </nav>
   </header>
 
   <main id="app" tabindex="-1">
