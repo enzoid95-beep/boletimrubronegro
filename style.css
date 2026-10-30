@@ -710,3 +710,11 @@ dialog::backdrop { background: rgba(5, 0, 1, .72); }
 .to-grade { display: grid; grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr)); gap: .6rem; }
 .to-grade > div { position: relative; padding: .85rem 1rem; border-radius: 14px; background: rgba(0,0,0,.3); box-shadow: inset 0 1px 0 rgba(255,255,255,.07); }
 .to-icone { position: absolute; top: .7rem; right: .8rem; font-size: 1.1rem; opacity: .85; }
+
+/* ---------- Cards de jogador dentro dos boxes: vermelho escuro preenchido ---------- */
+.dc-lider, .dc-lista a, .craque-mini, .cr-base, .atuacao {
+  background: linear-gradient(160deg, #470a15 0%, #33060e 55%, #2a050c 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .09), inset 0 0 0 1px rgba(255, 70, 90, .1);
+}
+.dc-lista a:hover, .atuacao:hover { background: linear-gradient(160deg, #561020 0%, #3d0812 55%, #320710 100%); }
+.atuacao.craque { background: linear-gradient(110deg, #7a0d1f 0%, #470a15 55%, #33060e 100%); }
