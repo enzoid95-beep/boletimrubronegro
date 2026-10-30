@@ -71,7 +71,8 @@
       "nome": "Alex Sandro",
       "posicao": "DEF",
       "numero": 26,
-      "ativo": true
+      "ativo": true,
+      "foto": "fotos/alex-sandro.jpg?v=mvui9piz"
     },
     {
       "id": "vitao",
