@@ -118,7 +118,8 @@
       "nome": "Samuel Lino",
       "posicao": "MEI",
       "numero": 16,
-      "ativo": true
+      "ativo": true,
+      "foto": "fotos/samuel-lino.jpg?v=mvuidymr"
     },
     {
       "id": "de-la-cruz",
