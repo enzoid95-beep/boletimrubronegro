@@ -142,7 +142,8 @@
       "nome": "Jorginho",
       "posicao": "MEI",
       "numero": 21,
-      "ativo": true
+      "ativo": true,
+      "foto": "fotos/jorginho.jpg?v=mvuifgol"
     },
     {
       "id": "evertton-araujo",
