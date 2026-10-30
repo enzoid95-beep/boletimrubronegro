@@ -47,7 +47,8 @@
       "nome": "Ayrton Lucas",
       "posicao": "DEF",
       "numero": 6,
-      "ativo": true
+      "ativo": true,
+      "foto": "fotos/ayrton-lucas.jpg?v=mvui8i29"
     },
     {
       "id": "danilo",
