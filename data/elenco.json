@@ -63,7 +63,8 @@
       "nome": "Emerson Royal",
       "posicao": "DEF",
       "numero": 22,
-      "ativo": true
+      "ativo": true,
+      "foto": "fotos/emerson-royal.jpg?v=mvui96wd"
     },
     {
       "id": "alex-sandro",
