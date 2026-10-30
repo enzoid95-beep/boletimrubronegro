@@ -651,18 +651,21 @@ function telaLancar(param, calId) {
 
     <div class="lancar-topo">
       <h2>Notas</h2>
-      <p class="sub">Toque na nota de cada jogador. Ligue “Não atuou” para quem não entrou em campo.</p>
+      <p class="sub">Deslize a régua de cada jogador. Toque no ✕ de quem não entrou em campo. Mínimo de ${MIN_NOTAS} e máximo de ${MAX_NOTAS} notas.</p>
     </div>
+    <div class="lista-lancar">
     ${ORDEM_POS.map((pos) => {
       const grupo = lista.filter((j) => j.posicao === pos);
       if (!grupo.length) return '';
       return `<section class="grupo-pos"><h3>${POSICOES[pos]}</h3><div class="grade-jog">${grupo.map((j) => linhaJogador(j, r)).join('')}</div></section>`;
     }).join('')}
+    </div>
+    <section id="fora-jogo" class="fora-jogo" hidden></section>
 
     <div class="barra-salvar card">
       <div class="progresso-info">
-        <span id="contagem">${contagemTexto()}</span>
-        <span class="barra"><span id="barra-fill" style="width:${progresso()}%"></span></span>
+        <span id="contagem"></span>
+        <span class="barra"><span id="barra-fill"></span><i class="marca-min" style="left:${(MIN_NOTAS / MAX_NOTAS) * 100}%"></i></span>
       </div>
       <button class="botao" id="f-salvar">${r.id ? 'Salvar alterações' : 'Salvar notas'}</button>
     </div>
@@ -683,20 +686,23 @@ function ladoPlacar(r, quem) {
     </div>
   </div>`;
 }
-function badgesGA(a) {
-  if (!a) return '';
-  return `${a.gols ? `<span class="ga ga-gol">${a.gols > 1 ? a.gols + ' ' : ''}gol${a.gols > 1 ? 's' : ''}</span>` : ''}${a.assist ? `<span class="ga">${a.assist > 1 ? a.assist + ' ' : ''}assist.</span>` : ''}`;
-}
+const MAX_NOTAS = 16, MIN_NOTAS = 11;
+const ICONE_X = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+const ICONE_VOLTA = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>';
+
 function linhaJogador(j, r) {
-  const a = r.atuacoes[j.id];
+  const a = r.atuacoes[j.id] || { nota: null, gols: 0, assist: 0 };
   const sit = situacao(r, j.id);
-  return `<div class="card jog ${sit}" data-jogador="${j.id}">
-    ${avatarHTML(j, 'm')}
-    <div class="jog-info"><b>${esc(j.nome)}</b><span class="sub">${j.numero ? `camisa ${j.numero}` : POS_UM[j.posicao]}</span><span class="badges">${badgesGA(a)}</span></div>
-    <button type="button" class="nota-btn" data-abrir ${sit === 'nao-atuou' ? 'disabled' : ''} aria-label="Nota de ${esc(j.nome)}">
-      ${temNota(r, j.id) ? notaHTML(a.nota) : '<span class="nota-vazia">Nota</span>'}
-    </button>
-    <label class="switch"><input type="checkbox" role="switch" data-nao ${sit === 'nao-atuou' ? 'checked' : ''}><span class="sw" aria-hidden="true"></span><span class="sw-rot">Não atuou</span></label>
+  const v = a.nota ?? 6;
+  return `<div class="jog ${sit}" data-jogador="${j.id}" style="--h:${matizNota(v)};--p:${v * 10}%" ${sit === 'nao-atuou' ? 'hidden' : ''}>
+    ${avatarHTML(j, 'p')}
+    <span class="jog-nome"><b>${esc(j.nome)}</b>${j.numero ? `<span class="num">${j.numero}</span>` : ''}</span>
+    <input class="regua" type="range" min="0" max="10" step="0.5" value="${v}" data-regua aria-label="Nota de ${esc(j.nome)}">
+    <button type="button" class="valor-nota" data-limpar-nota title="Toque para apagar a nota">${a.nota != null ? fmtNota(a.nota) : '–'}</button>
+    <span class="ga-mini">
+      ${['gols', 'assist'].map((k) => `<span class="ga-par ${a[k] ? 'tem' : ''}"><button type="button" data-ga="${k}" data-delta="-1" aria-label="Menos ${k === 'gols' ? 'um gol' : 'uma assistência'}">−</button><span class="ga-v" data-v="${k}">${k === 'gols' ? 'G' : 'A'}${a[k] || 0}</span><button type="button" data-ga="${k}" data-delta="1" aria-label="Mais ${k === 'gols' ? 'um gol' : 'uma assistência'}">+</button></span>`).join('')}
+    </span>
+    <button type="button" class="tirar" data-nao aria-label="${esc(j.nome)} não atuou" title="Não atuou">${ICONE_X}</button>
   </div>`;
 }
 function contar() {
@@ -706,113 +712,44 @@ function contar() {
   const nao = lista.filter((j) => situacao(r, j.id) === 'nao-atuou').length;
   return { total: lista.length, com, nao, pend: lista.length - com - nao };
 }
-const progresso = () => { const c = contar(); return c.total ? Math.round(((c.com + c.nao) / c.total) * 100) : 0; };
 function contagemTexto() {
   const c = contar();
-  return `${plural(c.com, 'nota', 'notas')}, ${c.nao} não ${c.nao === 1 ? 'atuou' : 'atuaram'}, ${plural(c.pend, 'pendente', 'pendentes')}`;
+  if (c.com < MIN_NOTAS) return `${c.com} de ${MAX_NOTAS} notas. Faltam ${MIN_NOTAS - c.com} para o mínimo de ${MIN_NOTAS}`;
+  if (c.com === MAX_NOTAS) return `${MAX_NOTAS} de ${MAX_NOTAS} notas. Limite atingido`;
+  return `${c.com} de ${MAX_NOTAS} notas`;
+}
+function atualizarResumo() {
+  const c = contar();
+  const t = $('#contagem'); if (t) t.textContent = contagemTexto();
+  const f = $('#barra-fill'); if (f) f.style.width = (c.com / MAX_NOTAS) * 100 + '%';
+  const lim = c.com >= MAX_NOTAS;
+  document.querySelector('.lista-lancar')?.classList.toggle('no-limite', lim);
+  const s = $('#f-salvar'); if (s) s.classList.toggle('pronto', c.com >= MIN_NOTAS);
 }
 function atualizarLinha(id) {
   const r = estado.rascunho;
   const el = document.querySelector(`.jog[data-jogador="${id}"]`);
   if (!el) return;
-  const sit = situacao(r, id), a = r.atuacoes[id];
+  const sit = situacao(r, id), a = r.atuacoes[id] || { nota: null, gols: 0, assist: 0 };
   el.classList.remove('pendente', 'com-nota', 'nao-atuou');
   el.classList.add(sit);
-  const btn = el.querySelector('.nota-btn');
-  btn.innerHTML = temNota(r, id) ? notaHTML(a.nota) : '<span class="nota-vazia">Nota</span>';
-  btn.disabled = sit === 'nao-atuou';
-  el.querySelector('.badges').innerHTML = badgesGA(a);
-  el.querySelector('[data-nao]').checked = sit === 'nao-atuou';
-  $('#contagem').textContent = contagemTexto();
-  $('#barra-fill').style.width = progresso() + '%';
+  if (a.nota != null) { el.style.setProperty('--h', matizNota(a.nota)); el.style.setProperty('--p', a.nota * 10 + '%'); }
+  el.querySelector('.valor-nota').textContent = a.nota != null ? fmtNota(a.nota) : '–';
+  ['gols', 'assist'].forEach((k) => {
+    el.querySelector(`[data-v="${k}"]`).textContent = (k === 'gols' ? 'G' : 'A') + (a[k] || 0);
+    el.querySelector(`[data-v="${k}"]`).parentNode.classList.toggle('tem', !!a[k]);
+  });
+  atualizarResumo();
 }
-
-/* folha de notas: escolher a nota com um toque e seguir para o próximo */
-const VALORES_NOTA = Array.from({ length: 21 }, (_, i) => i / 2);
-function abrirFolha(id) {
+function desenharForaDeJogo() {
   const r = estado.rascunho;
-  const lista = jogadoresDoLancamento(r);
-  let atual = id;
-  const dlg = document.createElement('dialog');
-  dlg.className = 'card folha';
-  document.body.appendChild(dlg);
-  const desenhar = () => {
-    const j = jogador(atual);
-    const a = r.atuacoes[atual] || { nota: null, gols: 0, assist: 0 };
-    const idx = lista.findIndex((x) => x.id === atual);
-    dlg.innerHTML = `
-      <div class="folha-topo">
-        <button class="redondo" data-ir="-1" aria-label="Jogador anterior" ${idx <= 0 ? 'disabled' : ''}>${ICONE_VOLTAR}</button>
-        <div class="folha-quem">${avatarHTML(j, 'g')}<div><b>${esc(j.nome)}</b><span class="sub">${POS_UM[j.posicao]}${j.numero ? `, camisa ${j.numero}` : ''}</span></div></div>
-        <button class="redondo" data-ir="1" aria-label="Próximo jogador" ${idx >= lista.length - 1 ? 'disabled' : ''}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
-      </div>
-      <div class="folha-extra">
-        ${['gols', 'assist'].map((k) => `<div class="contador contador-mini"><span class="rotulo">${k === 'gols' ? 'Gols' : 'Assistências'}</span>
-          <button class="redondo" data-ga="${k}" data-delta="-1" aria-label="Diminuir">−</button><span class="contador-valor">${a[k] || 0}</span><button class="redondo" data-ga="${k}" data-delta="1" aria-label="Aumentar">+</button></div>`).join('')}
-      </div>
-      <div class="grade-notas">${VALORES_NOTA.map((v) => `<button class="chip-nota ${a.nota === v ? 'ativa' : ''}" style="--h:${matizNota(v)}" data-nota="${v}">${fmtNota(v)}</button>`).join('')}</div>
-      <div class="folha-rodape">
-        <button class="botao sec" data-acao="nao">Não atuou</button>
-        ${a.nota != null ? '<button class="botao sec" data-acao="limpar">Limpar nota</button>' : ''}
-        <button class="botao" data-acao="fechar">Pronto</button>
-      </div>`;
-  };
-  // Ao fechar, a página fica parada no último jogador avaliado, sem voltar ao topo
-  const fechar = () => {
-    if (!dlg.open) return;
-    dlg.close(); dlg.remove();
-    const linha = document.querySelector(`.jog[data-jogador="${atual}"]`);
-    if (linha) {
-      linha.querySelector('.nota-btn').focus({ preventScroll: true });
-      const r0 = linha.getBoundingClientRect();
-      if (r0.top < 80 || r0.bottom > innerHeight - 140) linha.scrollIntoView({ block: 'center', behavior: 'auto' });
-    }
-  };
-  const proximoPendente = () => {
-    const idx = lista.findIndex((x) => x.id === atual);
-    return lista.slice(idx + 1).find((x) => situacao(r, x.id) === 'pendente');
-  };
-  dlg.addEventListener('click', (e) => {
-    if (e.target === dlg) return fechar();
-    const b = e.target.closest('button');
-    if (!b) return;
-    if (b.dataset.ir) { const idx = lista.findIndex((x) => x.id === atual) + Number(b.dataset.ir); if (lista[idx]) { atual = lista[idx].id; desenhar(); } return; }
-    if (b.dataset.ga) {
-      const a = (r.atuacoes[atual] = r.atuacoes[atual] || { nota: null, gols: 0, assist: 0 });
-      a[b.dataset.ga] = Math.max(0, (a[b.dataset.ga] || 0) + Number(b.dataset.delta));
-      delete r.naoAtuou[atual];
-      guardarRascunho(); atualizarLinha(atual); desenhar(); return;
-    }
-    if (b.dataset.nota !== undefined) {
-      const a = (r.atuacoes[atual] = r.atuacoes[atual] || { nota: null, gols: 0, assist: 0 });
-      a.nota = Number(b.dataset.nota);
-      delete r.naoAtuou[atual];
-      guardarRascunho(); atualizarLinha(atual);
-      dlg.querySelectorAll('.chip-nota').forEach((c) => c.classList.toggle('ativa', c === b));
-      const prox = proximoPendente();
-      setTimeout(() => { if (prox) { atual = prox.id; desenhar(); } else fechar(); }, 180);
-      return;
-    }
-    const acao = b.dataset.acao;
-    if (acao === 'fechar') return fechar();
-    if (acao === 'limpar') { if (r.atuacoes[atual]) r.atuacoes[atual].nota = null; guardarRascunho(); atualizarLinha(atual); desenhar(); }
-    if (acao === 'nao') {
-      r.naoAtuou[atual] = true; delete r.atuacoes[atual];
-      guardarRascunho(); atualizarLinha(atual);
-      const prox = proximoPendente();
-      if (prox) { atual = prox.id; desenhar(); } else fechar();
-    }
-  });
-  dlg.addEventListener('keydown', (e) => {
-    if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
-      const idx = lista.findIndex((x) => x.id === atual) + (e.key === 'ArrowRight' ? 1 : -1);
-      if (lista[idx]) { atual = lista[idx].id; desenhar(); }
-    }
-  });
-  dlg.addEventListener('cancel', (e) => { e.preventDefault(); fechar(); });
-  desenhar();
-  if (document.activeElement) document.activeElement.blur(); // impede o navegador de rolar até o botão ao fechar
-  dlg.showModal();
+  const fora = jogadoresDoLancamento(r).filter((j) => r.naoAtuou[j.id]);
+  const box = $('#fora-jogo');
+  if (!box) return;
+  box.hidden = !fora.length;
+  box.innerHTML = `<h3>Não atuaram <span class="sub">${fora.length}</span></h3>
+    <div class="fichas">${fora.map((j) => `<button type="button" class="ficha-jog" data-voltar="${j.id}" title="Voltar para a lista">${ICONE_VOLTA}${esc(j.nome)}</button>`).join('')}</div>`;
+  document.querySelectorAll('.grupo-pos').forEach((g) => { g.hidden = !g.querySelector('.jog:not([hidden])'); });
 }
 
 function ligarLancar() {
@@ -835,6 +772,34 @@ function ligarLancar() {
   ligarCampo('#f-comp', 'competicao');
   ligarCampo('#f-est', 'estadio', (v) => v.trim());
 
+  // guarda o rascunho sem travar o deslizar (no máximo a cada 400 ms)
+  let tGuardar;
+  const guardarDepois = () => { clearTimeout(tGuardar); tGuardar = setTimeout(guardarRascunho, 400); };
+
+  const darNota = (regua) => {
+    const id = regua.closest('[data-jogador]').dataset.jogador;
+    const ja = temNota(r, id);
+    if (!ja && contar().com >= MAX_NOTAS) {
+      avisar(`Limite de ${MAX_NOTAS} notas: 11 titulares e até 5 substitutos.`, true);
+      regua.value = 6; return;
+    }
+    const a = (r.atuacoes[id] = r.atuacoes[id] || { nota: null, gols: 0, assist: 0 });
+    a.nota = Number(regua.value);
+    delete r.naoAtuou[id];
+    const el = regua.closest('.jog');
+    el.style.setProperty('--h', matizNota(a.nota));
+    el.style.setProperty('--p', a.nota * 10 + '%');
+    el.querySelector('.valor-nota').textContent = fmtNota(a.nota);
+    if (!ja) { el.classList.remove('pendente'); el.classList.add('com-nota'); atualizarResumo(); }
+    guardarDepois();
+  };
+  app.addEventListener('input', (ev) => { if (ev.target.matches('[data-regua]')) darNota(ev.target); });
+  // um toque na régua sem arrastar também vale como nota
+  app.addEventListener('change', (ev) => { if (ev.target.matches('[data-regua]')) { darNota(ev.target); guardarRascunho(); } });
+  app.addEventListener('pointerup', (ev) => {
+    if (ev.target.matches('[data-regua]') && !temNota(r, ev.target.closest('[data-jogador]').dataset.jogador)) darNota(ev.target);
+  });
+
   app.addEventListener('click', async (ev) => {
     const alvo = ev.target.closest('button');
     if (!alvo) return;
@@ -844,11 +809,34 @@ function ligarLancar() {
       $(`[data-placar-valor="${alvo.dataset.placar}"]`, app).textContent = r[k];
       guardarRascunho(); return;
     }
-    if (alvo.dataset.mando) {
-      r.mandante = alvo.dataset.mando === '1';
-      guardarRascunho(); render(); return;
+    if (alvo.dataset.mando) { r.mandante = alvo.dataset.mando === '1'; guardarRascunho(); render(); return; }
+    const linha = alvo.closest('[data-jogador]');
+    if (alvo.dataset.ga && linha) {
+      const id = linha.dataset.jogador;
+      const a = (r.atuacoes[id] = r.atuacoes[id] || { nota: null, gols: 0, assist: 0 });
+      a[alvo.dataset.ga] = Math.max(0, (a[alvo.dataset.ga] || 0) + Number(alvo.dataset.delta));
+      guardarRascunho(); atualizarLinha(id); return;
     }
-    if (alvo.hasAttribute('data-abrir')) return abrirFolha(alvo.closest('[data-jogador]').dataset.jogador);
+    if (alvo.hasAttribute('data-limpar-nota') && linha) {
+      const id = linha.dataset.jogador;
+      if (r.atuacoes[id]) r.atuacoes[id].nota = null;
+      linha.querySelector('[data-regua]').value = 6;
+      linha.style.setProperty('--h', matizNota(6)); linha.style.setProperty('--p', '60%');
+      guardarRascunho(); atualizarLinha(id); return;
+    }
+    if (alvo.hasAttribute('data-nao') && linha) {
+      const id = linha.dataset.jogador;
+      r.naoAtuou[id] = true; delete r.atuacoes[id];
+      linha.hidden = true; linha.classList.remove('com-nota'); linha.classList.add('nao-atuou', 'pendente');
+      guardarRascunho(); desenharForaDeJogo(); atualizarResumo(); return;
+    }
+    if (alvo.dataset.voltar) {
+      const id = alvo.dataset.voltar;
+      delete r.naoAtuou[id];
+      const el = document.querySelector(`.jog[data-jogador="${id}"]`);
+      if (el) { el.hidden = false; el.classList.remove('nao-atuou'); el.classList.add('pendente'); el.querySelector('.valor-nota').textContent = '–'; el.querySelector('[data-regua]').value = 6; }
+      guardarRascunho(); desenharForaDeJogo(); atualizarResumo(); return;
+    }
     if (alvo.id === 'f-limpar') {
       if (!(await confirmar('Apagar todas as notas preenchidas neste jogo?', 'Apagar', true))) return;
       r.atuacoes = {}; r.naoAtuou = {}; r.golsFla = 0; r.golsAdv = 0; guardarRascunho(); render();
@@ -856,12 +844,8 @@ function ligarLancar() {
     if (alvo.id === 'f-salvar') salvarPartida(alvo);
     if (alvo.id === 'f-excluir') excluirPartida(alvo);
   });
-  app.addEventListener('change', (ev) => {
-    if (!ev.target.matches('[data-nao]')) return;
-    const id = ev.target.closest('[data-jogador]').dataset.jogador;
-    if (ev.target.checked) { r.naoAtuou[id] = true; delete r.atuacoes[id]; } else delete r.naoAtuou[id];
-    guardarRascunho(); atualizarLinha(id);
-  });
+  desenharForaDeJogo();
+  atualizarResumo();
 }
 
 function montarPartida() {
@@ -883,12 +867,13 @@ async function salvarPartida(botao) {
   if (!r.adversario) { const d = $('.detalhes'); if (d) d.open = true; $('#f-adv')?.focus(); return avisar('Escreva o nome do adversário nos detalhes da partida.', true); }
   if (!r.data) return avisar('Escolha a data do jogo.', true);
   const c = contar();
-  if (!c.com) return avisar('Dê nota para pelo menos um jogador.', true);
-  if (c.pend && !(await confirmar(`${plural(c.pend, 'jogador está', 'jogadores estão')} sem nota e ${c.pend === 1 ? 'será salvo' : 'serão salvos'} como “não atuou”.`, 'Salvar assim'))) {
-    const primeiro = document.querySelector('.jog.pendente');
-    if (primeiro) primeiro.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    return;
+  if (c.com < MIN_NOTAS) {
+    const primeiro = document.querySelector('.jog.pendente:not([hidden])');
+    if (primeiro) primeiro.scrollIntoView({ block: 'center' });
+    return avisar(`Uma partida precisa de pelo menos ${MIN_NOTAS} notas. Faltam ${MIN_NOTAS - c.com}.`, true);
   }
+  if (c.com > MAX_NOTAS) return avisar(`Uma partida pode ter no máximo ${MAX_NOTAS} notas.`, true);
+  // quem ficou sem nota é salvo como não atuou
   const p = montarPartida();
   const lista = estado.partidas.filter((x) => x.id !== p.id).concat(p).sort((a, b) => b.data.localeCompare(a.data));
   botao.disabled = true; botao.textContent = 'Salvando…';

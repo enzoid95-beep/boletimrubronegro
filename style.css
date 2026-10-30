@@ -63,15 +63,11 @@ h3 { font-size: 1.25rem; }
     linear-gradient(155deg, rgba(255, 255, 255, .075), rgba(255, 255, 255, .015) 55%, rgba(0, 0, 0, .15)),
     rgba(22, 8, 11, .72);
   border: 1px solid rgba(255, 255, 255, .08);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, .1),
-    inset 0 -1px 0 rgba(0, 0, 0, .4),
-    0 1px 2px rgba(0, 0, 0, .4),
-    0 14px 34px -12px rgba(0, 0, 0, .7);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .1), inset 0 -1px 0 rgba(0, 0, 0, .4), 0 6px 16px -10px rgba(0, 0, 0, .8);
   contain: paint;
 }
-a.card { text-decoration: none; transition: transform .25s var(--ease), border-color .25s, box-shadow .25s; }
-a.card:hover { transform: translateY(-2px); border-color: rgba(255, 255, 255, .16); }
+a.card { text-decoration: none; transition: border-color .2s; }
+a.card:hover { border-color: rgba(255, 255, 255, .2); }
 .card-topo { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap; }
 
 /* ---------- Topo ---------- */
@@ -80,8 +76,8 @@ a.card:hover { transform: translateY(-2px); border-color: rgba(255, 255, 255, .1
   display: flex; align-items: center; justify-content: space-between; gap: 1rem;
   padding: .8rem var(--lateral);
   padding-top: calc(.8rem + env(safe-area-inset-top, 0px)); margin-top: calc(-1 * env(safe-area-inset-top, 0px));
-  background: linear-gradient(180deg, rgba(20, 2, 6, .85), rgba(20, 2, 6, .6));
-  -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+  background: rgba(20, 2, 6, .96);
+  
   border-bottom: 1px solid var(--linha);
 }
 .marca { display: flex; align-items: center; gap: .85rem; text-decoration: none; font-family: var(--display); font-weight: 900; font-size: 1.75rem; line-height: .9; }
@@ -109,7 +105,7 @@ main { padding: 1.5rem var(--lateral) 3rem; outline: none; }
   .nav-baixo {
     display: flex; position: fixed; left: .75rem; right: .75rem; bottom: calc(.6rem + env(safe-area-inset-bottom, 0px)); z-index: 40;
     height: var(--nav-baixo); padding: .35rem; border-radius: 22px;
-    background: rgba(20, 3, 7, .82); -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px);
+    background: rgba(22, 3, 8, .97);
     border: 1px solid rgba(255,255,255,.1); box-shadow: 0 16px 34px -10px rgba(0,0,0,.8), inset 0 1px 0 rgba(255,255,255,.08);
   }
   body { padding-bottom: calc(var(--nav-baixo) + 1.2rem + env(safe-area-inset-bottom, 0px)); }
@@ -571,3 +567,89 @@ dialog::backdrop { background: rgba(5, 0, 1, .72); }
 .rodape a { color: var(--apagado); }
 
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; } }
+
+/* listas longas: o navegador só desenha o que está na tela */
+.cards-resultado > li, .atuacoes > li, .resultados > li { content-visibility: auto; contain-intrinsic-size: auto 120px; }
+.atuacoes > li, .resultados > li { contain-intrinsic-size: auto 64px; }
+
+/* ---------- Régua de notas ---------- */
+.lista-lancar .grupo-pos { margin-top: 1rem; }
+.lista-lancar .grupo-pos h3 { font-size: 1.1rem; margin-bottom: .45rem; }
+.grade-jog { grid-template-columns: repeat(auto-fill, minmax(min(100%, 520px), 1fr)); gap: .45rem; }
+.jog {
+  display: grid; align-items: center; gap: .35rem .6rem;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  grid-template-areas: "av nome ga x" "regua regua regua valor";
+  padding: .55rem .7rem .45rem; border-radius: 16px;
+  background: linear-gradient(155deg, rgba(255,255,255,.06), rgba(255,255,255,.015)), rgba(22, 8, 11, .8);
+  border: 1px solid rgba(255,255,255,.07); box-shadow: inset 0 1px 0 rgba(255,255,255,.07);
+}
+.jog > .avatar { grid-area: av; }
+.jog-nome { grid-area: nome; min-width: 0; display: flex; align-items: baseline; gap: .4rem; }
+.jog-nome b { font-weight: 800; font-size: .95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.jog-nome .num { font-family: var(--display); font-weight: 800; color: var(--apagado); font-size: .95rem; }
+.regua { grid-area: regua; }
+.valor-nota { grid-area: valor; }
+.ga-mini { grid-area: ga; display: flex; gap: .3rem; }
+.tirar { grid-area: x; }
+@media (min-width: 700px) {
+  .jog { grid-template-columns: auto minmax(6rem, 9rem) minmax(0, 1fr) auto auto auto; grid-template-areas: "av nome regua valor ga x"; padding: .45rem .6rem; }
+}
+.jog.com-nota { border-color: hsl(var(--h) 70% 50% / .35); }
+
+.regua {
+  -webkit-appearance: none; appearance: none; width: 100%; height: 30px; margin: 0; padding: 0;
+  background: transparent; cursor: pointer; touch-action: pan-y; border: 0; box-shadow: none; min-height: 0;
+}
+.regua:focus { outline: none; box-shadow: none; }
+.regua::-webkit-slider-runnable-track {
+  height: 8px; border-radius: 999px;
+  background: linear-gradient(90deg, hsl(var(--h) 80% 50%) var(--p), rgba(255,255,255,.12) var(--p));
+}
+.regua::-moz-range-track { height: 8px; border-radius: 999px; background: rgba(255,255,255,.12); }
+.regua::-moz-range-progress { height: 8px; border-radius: 999px; background: hsl(var(--h) 80% 50%); }
+.regua::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 26px; height: 26px; margin-top: -9px; border-radius: 50%;
+  background: #fff; border: 4px solid hsl(var(--h) 80% 48%); box-shadow: 0 2px 6px rgba(0,0,0,.55);
+}
+.regua::-moz-range-thumb { width: 18px; height: 18px; border-radius: 50%; background: #fff; border: 4px solid hsl(var(--h) 80% 48%); box-shadow: 0 2px 6px rgba(0,0,0,.55); }
+.regua:focus-visible::-webkit-slider-thumb { outline: 3px solid rgba(255,255,255,.5); outline-offset: 2px; }
+.jog.pendente .regua::-webkit-slider-runnable-track { background: rgba(255,255,255,.1); }
+.jog.pendente .regua::-moz-range-progress { background: transparent; }
+.jog.pendente .regua::-webkit-slider-thumb { background: #6e6266; border-color: #3c3236; }
+.jog.pendente .regua::-moz-range-thumb { background: #6e6266; border-color: #3c3236; }
+.lista-lancar.no-limite .jog.pendente .regua { opacity: .3; pointer-events: none; }
+
+.valor-nota {
+  min-width: 3.1rem; height: 2.3rem; padding: 0 .4rem; border-radius: 11px; border: 0; cursor: pointer;
+  font-family: var(--display); font-weight: 900; font-size: 1.45rem; font-variant-numeric: tabular-nums; line-height: 1;
+  color: hsl(var(--h) 92% 62%); background: hsl(var(--h) 85% 48% / .16); box-shadow: inset 0 0 0 1px hsl(var(--h) 85% 55% / .3);
+}
+.jog.pendente .valor-nota { color: var(--apagado); background: transparent; box-shadow: inset 0 0 0 1.5px rgba(255,255,255,.18); cursor: default; }
+
+.ga-par { display: inline-flex; align-items: center; border-radius: 999px; background: rgba(0,0,0,.3); box-shadow: inset 0 0 0 1px rgba(255,255,255,.08); }
+.ga-par button { width: 1.75rem; height: 1.75rem; border: 0; background: none; color: var(--apagado); cursor: pointer; font-weight: 800; font-size: 1rem; border-radius: 50%; }
+.ga-par button:hover { color: #fff; background: rgba(255,255,255,.1); }
+.ga-par:not(.tem) button[data-delta="-1"] { display: none; }
+.ga-par:not(.tem) .ga-v { padding-left: .55rem; }
+.ga-v { font-size: .75rem; font-weight: 800; color: var(--apagado); min-width: 1.4rem; text-align: center; }
+.ga-par.tem { background: rgba(255,255,255,.1); }
+.ga-par.tem .ga-v { color: #fff; }
+
+.tirar {
+  width: 2rem; height: 2rem; border-radius: 50%; border: 0; cursor: pointer; display: grid; place-items: center;
+  background: rgba(255,255,255,.06); color: var(--apagado);
+}
+.tirar:hover { background: rgba(226,0,26,.25); color: #fff; }
+.tirar svg, .ficha-jog svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; }
+
+.fora-jogo { margin-top: 1.25rem; padding: 1rem; border-radius: 16px; background: rgba(0,0,0,.25); border: 1px dashed rgba(255,255,255,.12); }
+.fora-jogo h3 { font-size: 1.1rem; margin-bottom: .6rem; color: var(--apagado); }
+.fichas { display: flex; flex-wrap: wrap; gap: .4rem; }
+.ficha-jog { display: inline-flex; align-items: center; gap: .35rem; padding: .4rem .75rem .4rem .55rem; border-radius: 999px; border: 1px solid var(--linha); background: rgba(255,255,255,.05); color: var(--apagado); font-weight: 700; font-size: .82rem; cursor: pointer; }
+.ficha-jog:hover { color: #fff; border-color: rgba(255,255,255,.3); }
+
+.barra { position: relative; overflow: visible; }
+.barra > span { border-radius: 999px; }
+.marca-min { position: absolute; top: -3px; bottom: -3px; width: 2px; background: rgba(255,255,255,.55); border-radius: 2px; }
+#f-salvar:not(.pronto) { background: rgba(255,255,255,.08); box-shadow: inset 0 0 0 1px var(--linha); color: var(--apagado); }
