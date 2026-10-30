@@ -110,7 +110,8 @@
       "nome": "Carrascal",
       "posicao": "MEI",
       "numero": 15,
-      "ativo": true
+      "ativo": true,
+      "foto": "fotos/carrascal.jpg?v=mvuidga5"
     },
     {
       "id": "samuel-lino",
