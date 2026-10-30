@@ -31,7 +31,8 @@
       "nome": "Léo Ortiz",
       "posicao": "DEF",
       "numero": 3,
-      "ativo": true
+      "ativo": true,
+      "foto": "fotos/leo-ortiz.jpg?v=mvui7nzr"
     },
     {
       "id": "leo-pereira",
