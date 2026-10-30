@@ -181,7 +181,8 @@
       "nome": "Plata",
       "posicao": "ATA",
       "numero": 19,
-      "ativo": true
+      "ativo": true,
+      "foto": "fotos/plata.jpg?v=mvuigq5f"
     },
     {
       "id": "bruno-henrique",
