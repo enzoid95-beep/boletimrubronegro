@@ -39,7 +39,8 @@
       "nome": "Léo Pereira",
       "posicao": "DEF",
       "numero": 4,
-      "ativo": true
+      "ativo": true,
+      "foto": "fotos/leo-pereira.jpg?v=mvui84lb"
     },
     {
       "id": "ayrton-lucas",
