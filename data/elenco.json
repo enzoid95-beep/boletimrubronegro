@@ -23,7 +23,8 @@
       "nome": "Varela",
       "posicao": "DEF",
       "numero": 2,
-      "ativo": true
+      "ativo": true,
+      "foto": "fotos/varela.jpg?v=mvui7bhl"
     },
     {
       "id": "leo-ortiz",
