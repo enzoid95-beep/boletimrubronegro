@@ -695,9 +695,12 @@ function linhaJogador(j, r) {
   const sit = situacao(r, j.id);
   const v = a.nota ?? 6;
   return `<div class="jog ${sit}" data-jogador="${j.id}" style="--h:${matizNota(v)};--p:${v * 10}%" ${sit === 'nao-atuou' ? 'hidden' : ''}>
-    ${avatarHTML(j, 'p')}
-    <span class="jog-nome"><b>${esc(j.nome)}</b>${j.numero ? `<span class="num">${j.numero}</span>` : ''}</span>
-    <input class="regua" type="range" min="0" max="10" step="0.5" value="${v}" data-regua aria-label="Nota de ${esc(j.nome)}">
+    ${avatarHTML(j, 'g')}
+    <span class="jog-nome"><b>${esc(j.nome)}</b><span class="sub">${j.numero ? `${j.numero}, ` : ''}${POS_UM[j.posicao]}</span></span>
+    <div class="regua-box">
+      <input class="regua" type="range" min="0" max="10" step="0.5" value="${v}" data-regua aria-label="Nota de ${esc(j.nome)}">
+      <span class="marcas" aria-hidden="true">${[0, 2, 4, 6, 8, 10].map((n) => `<i>${n}</i>`).join('')}</span>
+    </div>
     <button type="button" class="valor-nota" data-limpar-nota title="Toque para apagar a nota">${a.nota != null ? fmtNota(a.nota) : '–'}</button>
     <span class="ga-mini">
       ${['gols', 'assist'].map((k) => `<span class="ga-par ${a[k] ? 'tem' : ''}"><button type="button" data-ga="${k}" data-delta="-1" aria-label="Menos ${k === 'gols' ? 'um gol' : 'uma assistência'}">−</button><span class="ga-v" data-v="${k}">${k === 'gols' ? 'G' : 'A'}${a[k] || 0}</span><button type="button" data-ga="${k}" data-delta="1" aria-label="Mais ${k === 'gols' ? 'um gol' : 'uma assistência'}">+</button></span>`).join('')}
