@@ -7,7 +7,8 @@
       "nome": "Rossi",
       "posicao": "GOL",
       "numero": 1,
-      "ativo": true
+      "ativo": true,
+      "foto": "fotos/rossi.jpg?v=mvui0b6g"
     },
     {
       "id": "andrew",
