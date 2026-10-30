@@ -189,7 +189,8 @@
       "nome": "Bruno Henrique",
       "posicao": "ATA",
       "numero": 27,
-      "ativo": true
+      "ativo": true,
+      "foto": "fotos/bruno-henrique.jpg?v=mvuih6gb"
     },
     {
       "id": "joaquin-freitas",
