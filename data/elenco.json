@@ -55,7 +55,8 @@
       "nome": "Danilo",
       "posicao": "DEF",
       "numero": 13,
-      "ativo": true
+      "ativo": true,
+      "foto": "fotos/danilo.jpg?v=mvui8szs"
     },
     {
       "id": "emerson-royal",
