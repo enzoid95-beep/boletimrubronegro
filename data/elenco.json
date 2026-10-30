@@ -79,7 +79,8 @@
       "nome": "Vitão",
       "posicao": "DEF",
       "numero": 44,
-      "ativo": true
+      "ativo": true,
+      "foto": "fotos/vitao.jpg?v=mvuia5h2"
     },
     {
       "id": "pulgar",
