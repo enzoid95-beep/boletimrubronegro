@@ -1,0 +1,342 @@
+{
+  "atualizado": "2026-10-30",
+  "fonte": "Opta (Brasileirão Série A 2026)",
+  "jogadores": [
+    {
+      "id": "rossi",
+      "nome": "Rossi",
+      "posicao": "GOL",
+      "numero": 1,
+      "ativo": true
+    },
+    {
+      "id": "andrew",
+      "nome": "Andrew",
+      "posicao": "GOL",
+      "numero": 42,
+      "ativo": true
+    },
+    {
+      "id": "dyogo-alves",
+      "nome": "Dyogo Alves",
+      "posicao": "GOL",
+      "numero": 49,
+      "ativo": true
+    },
+    {
+      "id": "gabriel-werneck",
+      "nome": "Gabriel Werneck",
+      "posicao": "GOL",
+      "numero": null,
+      "ativo": true
+    },
+    {
+      "id": "leo-nannetti",
+      "nome": "Léo Nannetti",
+      "posicao": "GOL",
+      "numero": null,
+      "ativo": true
+    },
+    {
+      "id": "varela",
+      "nome": "Varela",
+      "posicao": "DEF",
+      "numero": 2,
+      "ativo": true
+    },
+    {
+      "id": "leo-ortiz",
+      "nome": "Léo Ortiz",
+      "posicao": "DEF",
+      "numero": 3,
+      "ativo": true
+    },
+    {
+      "id": "leo-pereira",
+      "nome": "Léo Pereira",
+      "posicao": "DEF",
+      "numero": 4,
+      "ativo": true
+    },
+    {
+      "id": "ayrton-lucas",
+      "nome": "Ayrton Lucas",
+      "posicao": "DEF",
+      "numero": 6,
+      "ativo": true
+    },
+    {
+      "id": "danilo",
+      "nome": "Danilo",
+      "posicao": "DEF",
+      "numero": 13,
+      "ativo": true
+    },
+    {
+      "id": "emerson-royal",
+      "nome": "Emerson Royal",
+      "posicao": "DEF",
+      "numero": 22,
+      "ativo": true
+    },
+    {
+      "id": "alex-sandro",
+      "nome": "Alex Sandro",
+      "posicao": "DEF",
+      "numero": 26,
+      "ativo": true
+    },
+    {
+      "id": "vitao",
+      "nome": "Vitão",
+      "posicao": "DEF",
+      "numero": 44,
+      "ativo": true
+    },
+    {
+      "id": "daniel-sales",
+      "nome": "Daniel Sales",
+      "posicao": "DEF",
+      "numero": 51,
+      "ativo": true
+    },
+    {
+      "id": "joao-victor",
+      "nome": "João Victor",
+      "posicao": "DEF",
+      "numero": 71,
+      "ativo": true
+    },
+    {
+      "id": "johnny-goes",
+      "nome": "Johnny Góes",
+      "posicao": "DEF",
+      "numero": 77,
+      "ativo": true
+    },
+    {
+      "id": "daniel-silva",
+      "nome": "Daniel Silva",
+      "posicao": "DEF",
+      "numero": 87,
+      "ativo": true
+    },
+    {
+      "id": "gusttavo",
+      "nome": "Gusttavo",
+      "posicao": "DEF",
+      "numero": null,
+      "ativo": true
+    },
+    {
+      "id": "luiz-da-silva",
+      "nome": "Luiz da Silva",
+      "posicao": "DEF",
+      "numero": null,
+      "ativo": true
+    },
+    {
+      "id": "pulgar",
+      "nome": "Pulgar",
+      "posicao": "MEI",
+      "numero": 5,
+      "ativo": true
+    },
+    {
+      "id": "saul",
+      "nome": "Saúl",
+      "posicao": "MEI",
+      "numero": 8,
+      "ativo": true
+    },
+    {
+      "id": "arrascaeta",
+      "nome": "Arrascaeta",
+      "posicao": "MEI",
+      "numero": 10,
+      "ativo": true
+    },
+    {
+      "id": "carrascal",
+      "nome": "Carrascal",
+      "posicao": "MEI",
+      "numero": 15,
+      "ativo": true
+    },
+    {
+      "id": "samuel-lino",
+      "nome": "Samuel Lino",
+      "posicao": "MEI",
+      "numero": 16,
+      "ativo": true
+    },
+    {
+      "id": "de-la-cruz",
+      "nome": "De la Cruz",
+      "posicao": "MEI",
+      "numero": 18,
+      "ativo": true
+    },
+    {
+      "id": "lucas-paqueta",
+      "nome": "Lucas Paquetá",
+      "posicao": "MEI",
+      "numero": 20,
+      "ativo": true
+    },
+    {
+      "id": "jorginho",
+      "nome": "Jorginho",
+      "posicao": "MEI",
+      "numero": 21,
+      "ativo": true
+    },
+    {
+      "id": "evertton-araujo",
+      "nome": "Evertton Araújo",
+      "posicao": "MEI",
+      "numero": 52,
+      "ativo": true
+    },
+    {
+      "id": "pablo-lucio",
+      "nome": "Pablo Lúcio",
+      "posicao": "MEI",
+      "numero": 56,
+      "ativo": true
+    },
+    {
+      "id": "luiz-felipe",
+      "nome": "Luiz Felipe",
+      "posicao": "MEI",
+      "numero": 75,
+      "ativo": true
+    },
+    {
+      "id": "joshua",
+      "nome": "Joshua",
+      "posicao": "MEI",
+      "numero": 79,
+      "ativo": true
+    },
+    {
+      "id": "gabriel-amancio",
+      "nome": "Gabriel Amancio",
+      "posicao": "MEI",
+      "numero": null,
+      "ativo": true
+    },
+    {
+      "id": "jheferson-medino",
+      "nome": "Jheferson Medino",
+      "posicao": "MEI",
+      "numero": null,
+      "ativo": true
+    },
+    {
+      "id": "joao-couto",
+      "nome": "João Couto",
+      "posicao": "MEI",
+      "numero": null,
+      "ativo": true
+    },
+    {
+      "id": "kaio-nobrega",
+      "nome": "Kaio Nóbrega",
+      "posicao": "MEI",
+      "numero": null,
+      "ativo": true
+    },
+    {
+      "id": "sayago",
+      "nome": "Sayago",
+      "posicao": "MEI",
+      "numero": null,
+      "ativo": true
+    },
+    {
+      "id": "luiz-araujo",
+      "nome": "Luiz Araújo",
+      "posicao": "ATA",
+      "numero": 7,
+      "ativo": true
+    },
+    {
+      "id": "pedro",
+      "nome": "Pedro",
+      "posicao": "ATA",
+      "numero": 9,
+      "ativo": true
+    },
+    {
+      "id": "valencia",
+      "nome": "Valencia",
+      "posicao": "ATA",
+      "numero": 14,
+      "ativo": true
+    },
+    {
+      "id": "plata",
+      "nome": "Plata",
+      "posicao": "ATA",
+      "numero": 19,
+      "ativo": true
+    },
+    {
+      "id": "bruno-henrique",
+      "nome": "Bruno Henrique",
+      "posicao": "ATA",
+      "numero": 27,
+      "ativo": true
+    },
+    {
+      "id": "joaquin-freitas",
+      "nome": "Joaquín Freitas",
+      "posicao": "ATA",
+      "numero": 30,
+      "ativo": true
+    },
+    {
+      "id": "josmar",
+      "nome": "Josmar",
+      "posicao": "ATA",
+      "numero": 39,
+      "ativo": true
+    },
+    {
+      "id": "alan-santos",
+      "nome": "Alan Santos",
+      "posicao": "ATA",
+      "numero": 59,
+      "ativo": true
+    },
+    {
+      "id": "douglas-telles",
+      "nome": "Douglas Telles",
+      "posicao": "ATA",
+      "numero": 81,
+      "ativo": true
+    },
+    {
+      "id": "isaac-gomes",
+      "nome": "Isaac Gomes",
+      "posicao": "ATA",
+      "numero": null,
+      "ativo": true
+    },
+    {
+      "id": "ramires",
+      "nome": "Ramires",
+      "posicao": "ATA",
+      "numero": null,
+      "ativo": true
+    },
+    {
+      "id": "reyes",
+      "nome": "Reyes",
+      "posicao": "ATA",
+      "numero": null,
+      "ativo": true
+    }
+  ]
+}
