@@ -95,7 +95,8 @@
       "nome": "Saúl",
       "posicao": "MEI",
       "numero": 8,
-      "ativo": true
+      "ativo": true,
+      "foto": "fotos/saul.jpg?v=mvuiyj18"
     },
     {
       "id": "arrascaeta",
