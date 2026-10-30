@@ -89,7 +89,11 @@ async function gh(caminho, opcoes = {}) {
   return r.json();
 }
 async function lerDoGitHub(nome) {
-  const j = await gh(`data/${nome}.json`);
+  let j;
+  try { j = await gh(`data/${nome}.json`); } catch (e) {
+    if (e.status === 404) { e.arquivo = `data/${nome}.json`; }
+    throw e;
+  }
   estado.sha[nome] = j.sha;
   return JSON.parse(b64ParaTexto(j.content));
 }
@@ -113,8 +117,9 @@ async function gravarNoGitHub(nome, objeto, mensagem, tentativa = 1) {
 function explicarErro(e) {
   if (e.status === 401) return 'O token foi recusado pelo GitHub. Gere um novo e cole na configuração.';
   if (e.status === 403) return 'O token não tem permissão de escrita. Dê acesso “Contents: Read and write” ao repositório.';
-  if (e.status === 404) return 'Repositório ou branch não encontrado. Confira dono, repositório e branch na configuração.';
-  return `Não deu para salvar: ${e.message}`;
+  if (e.status === 404 && e.arquivo) return `O repositório foi encontrado, mas o arquivo ${e.arquivo} não está nele. Envie a pasta data junto com o index.html.`;
+  if (e.status === 404) return 'Repositório ou branch não encontrado, ou o token não tem acesso a ele. Confira usuário, repositório e branch.';
+  return `Algo deu errado: ${e.message}`;
 }
 
 /* ---------------- carregamento ---------------- */
@@ -129,10 +134,14 @@ async function carregar() {
   }
   if (!elenco || !partidas) {
     const v = Date.now();
-    [elenco, partidas] = await Promise.all([
-      fetch(`data/elenco.json?v=${v}`).then((r) => r.json()),
-      fetch(`data/partidas.json?v=${v}`).then((r) => r.json()),
-    ]);
+    const lerPublicado = async (nome) => {
+      const r = await fetch(`data/${nome}.json?v=${v}`);
+      const txt = await r.text();
+      try { return JSON.parse(txt); } catch {
+        throw new Error(`o arquivo data/${nome}.json não foi encontrado no site. Confira se a pasta data foi enviada para o repositório, ao lado do index.html`);
+      }
+    };
+    [elenco, partidas] = await Promise.all([lerPublicado('elenco'), lerPublicado('partidas')]);
   }
   estado.elenco = elenco.jogadores || [];
   estado.elencoMeta = elenco;
@@ -547,6 +556,7 @@ function ligarConfig() {
     if (!c.dono || !c.repo || !c.token) return avisar('Preencha usuário, repositório e token.', true);
     salvarConfig(c);
     try {
+      await testarConexao(c);
       await carregar();
       avisar('Conectado ao GitHub.');
       atualizarNav(); render();
@@ -559,6 +569,19 @@ function ligarConfig() {
     const c = lerConfig(); delete c.token; salvarConfig(c);
     avisar('Token removido deste navegador.'); atualizarNav(); render();
   });
+}
+
+async function testarConexao(c) {
+  const h = { Accept: 'application/vnd.github+json', Authorization: `Bearer ${c.token}` };
+  const repo = await fetch(`https://api.github.com/repos/${c.dono}/${c.repo}`, { headers: h });
+  if (repo.status === 401) throw Object.assign(new Error(''), { status: 401 });
+  if (!repo.ok) throw Object.assign(new Error(''), { status: 404 });
+  const info = await repo.json();
+  if (info.permissions && !info.permissions.push) throw Object.assign(new Error(''), { status: 403 });
+  const br = await fetch(`https://api.github.com/repos/${c.dono}/${c.repo}/branches/${encodeURIComponent(c.branch)}`, { headers: h });
+  if (!br.ok) throw new Error(`a branch “${c.branch}” não existe. O padrão do repositório é “${info.default_branch}”`);
+  await lerDoGitHub('elenco');
+  await lerDoGitHub('partidas');
 }
 
 function montarPartida() {
