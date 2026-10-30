@@ -175,7 +175,8 @@
       "nome": "Valencia",
       "posicao": "ATA",
       "numero": 14,
-      "ativo": true
+      "ativo": true,
+      "foto": "fotos/valencia.jpg?v=mvuja41b"
     },
     {
       "id": "plata",
