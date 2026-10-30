@@ -13,6 +13,7 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <a class="pular" href="#app">Pular para o conteúdo</a>
   <header class="topo">
     <div class="listras" aria-hidden="true"></div>
     <div class="topo-conteudo">
@@ -20,7 +21,7 @@
       <nav class="nav" aria-label="Principal">
         <a href="#/" data-nav="jogos">Jogos</a>
         <a href="#/ranking" data-nav="ranking">Ranking</a>
-        <a href="#/lancar" data-nav="lancar" class="nav-autor" hidden>Lançar notas</a>
+        <a href="#/lancar" data-nav="autor" class="so-autor" hidden>Área do autor</a>
       </nav>
     </div>
   </header>
@@ -31,8 +32,14 @@
 
   <footer class="rodape">
     <span>Notas de um torcedor, jogo a jogo.</span>
-    <a href="#/lancar">Área do autor</a>
+    <a href="#/autor/conexao">Área do autor</a>
   </footer>
+
+  <nav class="nav-baixo" aria-label="Principal">
+    <a href="#/" data-nav="jogos"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="1"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Jogos</a>
+    <a href="#/ranking" data-nav="ranking"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21V12h4v9M10 21V5h4v16M16 21v-6h4v6"/></svg>Ranking</a>
+    <a href="#/lancar" data-nav="autor" class="so-autor" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4zM13 7l4 4"/></svg>Notas</a>
+  </nav>
 
   <div id="aviso" class="aviso" role="status" aria-live="polite"></div>
   <script src="app.js"></script>

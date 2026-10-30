@@ -1,0 +1,217 @@
+{
+  "times": {
+    "flamengo": {
+      "nome": "Flamengo",
+      "sigla": "FLA",
+      "cor": "#E2001A",
+      "texto": "#000000",
+      "apelidos": [],
+      "escudo": null
+    },
+    "botafogo": {
+      "nome": "Botafogo",
+      "sigla": "BOT",
+      "cor": "#000000",
+      "texto": "#FFFFFF",
+      "apelidos": [
+        "fogão"
+      ],
+      "escudo": null
+    },
+    "atletico-mg": {
+      "nome": "Atlético-MG",
+      "sigla": "CAM",
+      "cor": "#1A1A1A",
+      "texto": "#FFFFFF",
+      "apelidos": [
+        "atletico mineiro",
+        "galo",
+        "atletico mg"
+      ],
+      "escudo": null
+    },
+    "vasco": {
+      "nome": "Vasco",
+      "sigla": "VAS",
+      "cor": "#FFFFFF",
+      "texto": "#000000",
+      "apelidos": [
+        "vasco da gama"
+      ],
+      "escudo": null
+    },
+    "chapecoense": {
+      "nome": "Chapecoense",
+      "sigla": "CHA",
+      "cor": "#00A04B",
+      "texto": "#FFFFFF",
+      "apelidos": [
+        "chape"
+      ],
+      "escudo": null
+    },
+    "athletico-pr": {
+      "nome": "Athletico-PR",
+      "sigla": "CAP",
+      "cor": "#C8102E",
+      "texto": "#000000",
+      "apelidos": [
+        "athletico",
+        "athletico paranaense",
+        "athletico pr",
+        "furacao"
+      ],
+      "escudo": null
+    },
+    "remo": {
+      "nome": "Remo",
+      "sigla": "REM",
+      "cor": "#0B2D6B",
+      "texto": "#FFFFFF",
+      "apelidos": [
+        "clube do remo"
+      ],
+      "escudo": null
+    },
+    "coritiba": {
+      "nome": "Coritiba",
+      "sigla": "CFC",
+      "cor": "#00544D",
+      "texto": "#FFFFFF",
+      "apelidos": [
+        "coxa"
+      ],
+      "escudo": null
+    },
+    "cruzeiro": {
+      "nome": "Cruzeiro",
+      "sigla": "CRU",
+      "cor": "#1F3C93",
+      "texto": "#FFFFFF",
+      "apelidos": [],
+      "escudo": null
+    },
+    "bahia": {
+      "nome": "Bahia",
+      "sigla": "BAH",
+      "cor": "#0055A4",
+      "texto": "#FFFFFF",
+      "apelidos": [],
+      "escudo": null
+    },
+    "vitoria": {
+      "nome": "Vitória",
+      "sigla": "VIT",
+      "cor": "#B5121B",
+      "texto": "#000000",
+      "apelidos": [],
+      "escudo": null
+    },
+    "fluminense": {
+      "nome": "Fluminense",
+      "sigla": "FLU",
+      "cor": "#7A1F3D",
+      "texto": "#FFFFFF",
+      "apelidos": [
+        "flu"
+      ],
+      "escudo": null
+    },
+    "gremio": {
+      "nome": "Grêmio",
+      "sigla": "GRE",
+      "cor": "#0D80BF",
+      "texto": "#FFFFFF",
+      "apelidos": [],
+      "escudo": null
+    },
+    "mirassol": {
+      "nome": "Mirassol",
+      "sigla": "MIR",
+      "cor": "#FFD200",
+      "texto": "#0A5F2C",
+      "apelidos": [],
+      "escudo": null
+    },
+    "bragantino": {
+      "nome": "Bragantino",
+      "sigla": "RBB",
+      "cor": "#FFFFFF",
+      "texto": "#C8102E",
+      "apelidos": [
+        "red bull bragantino",
+        "rb bragantino"
+      ],
+      "escudo": null
+    },
+    "corinthians": {
+      "nome": "Corinthians",
+      "sigla": "COR",
+      "cor": "#FFFFFF",
+      "texto": "#000000",
+      "apelidos": [
+        "timao"
+      ],
+      "escudo": null
+    },
+    "internacional": {
+      "nome": "Internacional",
+      "sigla": "INT",
+      "cor": "#D0021B",
+      "texto": "#FFFFFF",
+      "apelidos": [
+        "inter"
+      ],
+      "escudo": null
+    },
+    "palmeiras": {
+      "nome": "Palmeiras",
+      "sigla": "PAL",
+      "cor": "#006437",
+      "texto": "#FFFFFF",
+      "apelidos": [
+        "verdao"
+      ],
+      "escudo": null
+    },
+    "santos": {
+      "nome": "Santos",
+      "sigla": "SAN",
+      "cor": "#FFFFFF",
+      "texto": "#000000",
+      "apelidos": [],
+      "escudo": null
+    },
+    "sao-paulo": {
+      "nome": "São Paulo",
+      "sigla": "SAO",
+      "cor": "#FFFFFF",
+      "texto": "#D0021B",
+      "apelidos": [
+        "spfc"
+      ],
+      "escudo": null
+    },
+    "estudiantes": {
+      "nome": "Estudiantes",
+      "sigla": "EST",
+      "cor": "#D0021B",
+      "texto": "#FFFFFF",
+      "apelidos": [
+        "estudiantes de la plata"
+      ],
+      "escudo": null
+    },
+    "independiente-del-valle": {
+      "nome": "Independiente del Valle",
+      "sigla": "IDV",
+      "cor": "#000000",
+      "texto": "#4FA3E0",
+      "apelidos": [
+        "independiente valle",
+        "del valle"
+      ],
+      "escudo": null
+    }
+  }
+}

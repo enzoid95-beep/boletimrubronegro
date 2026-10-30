@@ -1,0 +1,72 @@
+{
+  "temporada": 2026,
+  "fonte": "Opta e CBF, conferido em 30/10/2026. Datas das rodadas 35 a 38 ainda podem mudar e os horários não foram definidos pela CBF.",
+  "jogos": [
+    {
+      "id": "bra-33",
+      "competicao": "Brasileirão",
+      "rodada": 33,
+      "data": "2026-10-29",
+      "hora": "20:00",
+      "adversario": "Vasco",
+      "mandante": false,
+      "estadio": "São Januário",
+      "cidade": "Rio de Janeiro"
+    },
+    {
+      "id": "bra-34",
+      "competicao": "Brasileirão",
+      "rodada": 34,
+      "data": "2026-11-04",
+      "hora": "19:30",
+      "adversario": "Grêmio",
+      "mandante": true,
+      "estadio": "Maracanã",
+      "cidade": "Rio de Janeiro"
+    },
+    {
+      "id": "bra-35",
+      "competicao": "Brasileirão",
+      "rodada": 35,
+      "data": "2026-11-18",
+      "hora": null,
+      "adversario": "Athletico-PR",
+      "mandante": true,
+      "estadio": "Maracanã",
+      "cidade": "Rio de Janeiro"
+    },
+    {
+      "id": "bra-36",
+      "competicao": "Brasileirão",
+      "rodada": 36,
+      "data": "2026-11-21",
+      "hora": null,
+      "adversario": "Palmeiras",
+      "mandante": false,
+      "estadio": "Nubank Parque",
+      "cidade": "São Paulo"
+    },
+    {
+      "id": "bra-37",
+      "competicao": "Brasileirão",
+      "rodada": 37,
+      "data": "2026-11-28",
+      "hora": null,
+      "adversario": "Coritiba",
+      "mandante": false,
+      "estadio": "Couto Pereira",
+      "cidade": "Curitiba"
+    },
+    {
+      "id": "bra-38",
+      "competicao": "Brasileirão",
+      "rodada": 38,
+      "data": "2026-12-02",
+      "hora": null,
+      "adversario": "Chapecoense",
+      "mandante": true,
+      "estadio": "Maracanã",
+      "cidade": "Rio de Janeiro"
+    }
+  ]
+}
