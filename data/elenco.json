@@ -87,7 +87,8 @@
       "nome": "Pulgar",
       "posicao": "MEI",
       "numero": 5,
-      "ativo": true
+      "ativo": true,
+      "foto": "fotos/pulgar.jpg?v=mvuialf5"
     },
     {
       "id": "saul",
