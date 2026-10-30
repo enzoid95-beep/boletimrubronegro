@@ -134,7 +134,8 @@
       "nome": "Lucas Paquetá",
       "posicao": "MEI",
       "numero": 20,
-      "ativo": true
+      "ativo": true,
+      "foto": "fotos/lucas-paqueta.jpg?v=mvuiew64"
     },
     {
       "id": "jorginho",
