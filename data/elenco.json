@@ -158,7 +158,8 @@
       "nome": "Luiz Araújo",
       "posicao": "ATA",
       "numero": 7,
-      "ativo": true
+      "ativo": true,
+      "foto": "fotos/luiz-araujo.jpg?v=mvuift01"
     },
     {
       "id": "pedro",
