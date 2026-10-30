@@ -1,0 +1,153 @@
+{
+  "temporada": 2026,
+  "ate": "2026-10-29",
+  "competicoes": "todas as competições oficiais",
+  "fonte": "GOL LAB (temporada até 26/10) e Opta (Vasco 1×4 Flamengo, 29/10)",
+  "nota": "Jogos com nota lançados depois desta data somam gols e assistências automaticamente.",
+  "jogadores": {
+    "pedro": {
+      "gols": 27,
+      "assist": 10,
+      "jogos": 53,
+      "minutos": 3605
+    },
+    "samuel-lino": {
+      "gols": 14,
+      "assist": 13,
+      "jogos": 53,
+      "minutos": 3448
+    },
+    "carrascal": {
+      "gols": 8,
+      "assist": 11,
+      "jogos": 47,
+      "minutos": 2748
+    },
+    "bruno-henrique": {
+      "gols": 9,
+      "assist": 8,
+      "jogos": 45,
+      "minutos": 1861
+    },
+    "arrascaeta": {
+      "gols": 10,
+      "assist": 5,
+      "jogos": 38,
+      "minutos": 2334
+    },
+    "lucas-paqueta": {
+      "gols": 13,
+      "assist": 1,
+      "jogos": 42,
+      "minutos": 2498
+    },
+    "jorginho": {
+      "gols": 4,
+      "assist": 3,
+      "jogos": 37,
+      "minutos": 2877
+    },
+    "plata": {
+      "gols": 4,
+      "assist": 3,
+      "jogos": 40,
+      "minutos": 2034
+    },
+    "luiz-araujo": {
+      "gols": 4,
+      "assist": 2,
+      "jogos": 32,
+      "minutos": 1190
+    },
+    "varela": {
+      "gols": 1,
+      "assist": 6,
+      "jogos": 36,
+      "minutos": 2486
+    },
+    "emerson-royal": {
+      "gols": 0,
+      "assist": 5,
+      "jogos": 35,
+      "minutos": 2859
+    },
+    "leo-pereira": {
+      "gols": 3,
+      "assist": 1,
+      "jogos": 44,
+      "minutos": 3817
+    },
+    "ayrton-lucas": {
+      "gols": 0,
+      "assist": 4,
+      "jogos": 34,
+      "minutos": 2313
+    },
+    "pulgar": {
+      "gols": 3,
+      "assist": 0,
+      "jogos": 38,
+      "minutos": 2978
+    },
+    "evertton-araujo": {
+      "gols": 1,
+      "assist": 2,
+      "jogos": 35,
+      "minutos": 2114
+    },
+    "leo-ortiz": {
+      "gols": 1,
+      "assist": 1,
+      "jogos": 43,
+      "minutos": 3510
+    },
+    "de-la-cruz": {
+      "gols": 1,
+      "assist": 1,
+      "jogos": 23,
+      "minutos": 627
+    },
+    "danilo": {
+      "gols": 1,
+      "assist": 0,
+      "jogos": 21,
+      "minutos": 1531
+    },
+    "rossi": {
+      "gols": 0,
+      "assist": 1,
+      "jogos": 50,
+      "minutos": 4530
+    },
+    "alex-sandro": {
+      "gols": 0,
+      "assist": 1,
+      "jogos": 32,
+      "minutos": 2373
+    },
+    "saul": {
+      "gols": 0,
+      "assist": 1,
+      "jogos": 16,
+      "minutos": 550
+    },
+    "joaquin-freitas": {
+      "gols": 0,
+      "assist": 1,
+      "jogos": 9,
+      "minutos": 100
+    },
+    "andrew": {
+      "gols": 0,
+      "assist": 0,
+      "jogos": null,
+      "minutos": null
+    },
+    "vitao": {
+      "gols": 0,
+      "assist": 0,
+      "jogos": null,
+      "minutos": null
+    }
+  }
+}

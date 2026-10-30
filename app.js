@@ -224,7 +224,7 @@ async function testarConexao(c) {
 }
 
 /* ================= carregamento ================= */
-const PADRAO = { calendario: { jogos: [] }, times: { times: {} } };
+const PADRAO = { calendario: { jogos: [] }, times: { times: {} }, estatisticas: { jogadores: {} } };
 async function lerArquivo(nome, viaGitHub) {
   if (viaGitHub) {
     try { return await lerDoGitHub(nome); } catch (e) {
@@ -240,7 +240,7 @@ async function lerArquivo(nome, viaGitHub) {
   }
 }
 async function carregar() {
-  const nomes = ['elenco', 'partidas', 'calendario', 'times'];
+  const nomes = ['elenco', 'partidas', 'calendario', 'times', 'estatisticas'];
   let dados;
   if (temToken()) {
     try { dados = await Promise.all(nomes.map((n) => lerArquivo(n, true))); } catch (e) {
@@ -248,7 +248,7 @@ async function carregar() {
     }
   }
   if (!dados) dados = await Promise.all(nomes.map((n) => lerArquivo(n, false)));
-  const [elenco, partidas, calendario, times] = dados;
+  const [elenco, partidas, calendario, times, estat] = dados;
   estado.meta = { elenco, partidas, calendario, times };
   estado.elenco = elenco.jogadores || [];
   aplicarCorrecoes(elenco);
@@ -256,6 +256,7 @@ async function carregar() {
   estado.partidas = (partidas.partidas || []).sort((a, b) => b.data.localeCompare(a.data));
   estado.calendario = (calendario.jogos || []).sort((a, b) => a.data.localeCompare(b.data) || (a.hora || '').localeCompare(b.hora || ''));
   estado.times = times.times || {};
+  estado.estat = estat || PADRAO.estatisticas;
 }
 
 /* ================= correções do elenco ================= */
@@ -428,13 +429,30 @@ function telaJogos() {
 }
 
 /* ---------- destaques da temporada (página inicial) ---------- */
+function estatisticasTemporada() {
+  const base = estado.estat?.jogadores || {};
+  const ate = estado.estat?.ate || '0000-00-00';
+  const mapa = new Map();
+  Object.entries(base).forEach(([id, v]) => mapa.set(id, { id, gols: v.gols || 0, assist: v.assist || 0, jogos: v.jogos || 0, minutos: v.minutos || 0 }));
+  estado.partidas.filter((p) => p.data > ate).forEach((p) => p.atuacoes.forEach((a) => {
+    const s = mapa.get(a.jogador) || { id: a.jogador, gols: 0, assist: 0, jogos: 0, minutos: 0 };
+    s.gols += a.gols || 0; s.assist += a.assist || 0; s.jogos += 1;
+    mapa.set(a.jogador, s);
+  }));
+  return [...mapa.values()];
+}
+const temEstatOficial = () => Object.keys(estado.estat?.jogadores || {}).length > 0;
 function rankingPor(chave) {
+  if (temEstatOficial()) {
+    return estatisticasTemporada().filter((s) => s[chave] > 0).sort((a, b) => b[chave] - a[chave] || a.jogos - b.jogos);
+  }
   const stats = estatisticas(estado.partidas).filter((s) => s[chave] > 0)
     .sort((a, b) => b[chave] - a[chave] || a.jogos - b.jogos || b.media - a.media);
   return stats;
 }
 function cartaoLider(titulo, icone, chave, unidade, vazio) {
   const lista = rankingPor(chave);
+  const rodape = temEstatOficial() ? `<p class="dc-fonte">Temporada ${estado.estat.temporada || ''}, ${esc(estado.estat.competicoes || 'todas as competições')}.</p>` : '';
   if (!lista.length) {
     return `<section class="card destaque-card"><div class="dc-topo"><h3>${titulo}</h3><span class="dc-icone" aria-hidden="true">${icone}</span></div><p class="sub">${vazio}</p></section>`;
   }
@@ -456,6 +474,7 @@ function cartaoLider(titulo, icone, chave, unidade, vazio) {
       const x = jogador(s.id);
       return `<li><a href="#/jogador/${x.id}"><span class="dc-pos">${i + 2}</span>${avatarHTML(x, 'm')}<span class="dc-nome"><b>${esc(x.nome)}</b><span class="sub">${plural(s.jogos, 'jogo', 'jogos')}</span></span><span class="dc-qtd">${s[chave]}</span></a></li>`;
     }).join('')}</ol>` : ''}
+    ${rodape}
   </section>`;
 }
 function cartaoNotasIndividuais(titulo, icone, ordem) {
@@ -487,6 +506,7 @@ function cartaoMedias() {
 function destaquesTemporada() {
   return `<section class="secao">
     <div class="secao-topo"><h2>Destaques da temporada</h2><a class="link-sutil" href="#/ranking">Ver ranking completo</a></div>
+    ${temEstatOficial() ? `<p class="sub fonte-dados">Gols e assistências: ${esc(estado.estat.fonte)}. ${esc(estado.estat.nota || '')}</p>` : ''}
     <div class="grade-destaques">
       ${cartaoLider('Artilheiro', '⚽', 'gols', ['gol', 'gols'], 'Nenhum gol registrado ainda.')}
       ${cartaoLider('Maior assistente', '👟', 'assist', ['assistência', 'assistências'], 'Nenhuma assistência registrada ainda.')}
@@ -625,7 +645,19 @@ function telaJogador(id) {
         <div class="sub jogador-sub">${bandeiraHTML(j)}${POS_UM[j.posicao]}${j.numero ? `, camisa ${j.numero}` : ''}</div>
         <h1>${esc(j.nome)}</h1>
       </div>`;
-  if (!jogos.length) return `${topo}</header><p class="vazio">Ainda sem notas nesta temporada.</p>`;
+  const of = temEstatOficial() ? estatisticasTemporada().find((x) => x.id === id) : null;
+  const oficial = of ? `<section class="card temporada-oficial">
+      <div class="card-topo"><h2>Temporada ${estado.estat.temporada || ''}</h2><span class="sub">todas as competições</span></div>
+      <div class="to-grade">
+        <div><span class="to-icone" aria-hidden="true">⚽</span><span class="numero-grande">${of.gols}</span><span>${of.gols === 1 ? 'gol' : 'gols'}</span></div>
+        <div><span class="to-icone" aria-hidden="true">👟</span><span class="numero-grande">${of.assist}</span><span>${of.assist === 1 ? 'assistência' : 'assistências'}</span></div>
+        ${of.jogos ? `<div><span class="numero-grande">${of.jogos}</span><span>jogos</span></div>` : ''}
+        ${of.minutos ? `<div><span class="numero-grande">${of.minutos.toLocaleString('pt-BR')}</span><span>minutos</span></div>` : ''}
+        ${of.gols && of.minutos ? `<div><span class="numero-grande">${Math.round(of.minutos / of.gols)}</span><span>minutos por gol</span></div>` : ''}
+      </div>
+      <p class="dc-fonte">Fonte: ${esc(estado.estat.fonte)}.</p>
+    </section>` : '';
+  if (!jogos.length) return `${topo}</header>${oficial}<p class="vazio">Ainda sem notas nesta temporada.</p>`;
   const s = estatisticas(jogos).find((x) => x.id === id);
   const cron = [...jogos].reverse().map((p) => ({ ...p.atuacoes.find((a) => a.jogador === id), id: p.id, data: p.data, adversario: p.adversario }));
   const melhor = cron.reduce((a, b) => (b.nota > a.nota ? b : a));
@@ -633,13 +665,12 @@ function telaJogador(id) {
   return `${topo}
       <div class="numeros">
         <div><span class="numero-grande destaque-num">${fmtNota(s.media)}</span><span>média</span></div>
-        <div><span class="numero-grande">${s.jogos}</span><span>${s.jogos === 1 ? 'jogo' : 'jogos'}</span></div>
-        <div><span class="numero-grande">${s.gols}</span><span>${s.gols === 1 ? 'gol' : 'gols'}</span></div>
-        <div><span class="numero-grande">${s.assist}</span><span>${s.assist === 1 ? 'assistência' : 'assistências'}</span></div>
+        <div><span class="numero-grande">${s.jogos}</span><span>${s.jogos === 1 ? 'jogo com nota' : 'jogos com nota'}</span></div>
         <div><span class="numero-grande">${s.craque}</span><span>vezes craque</span></div>
         <div><span class="numero-grande">${fmtNota(melhor.nota)}</span><span>melhor nota, contra ${esc(timeDe(melhor.adversario).nome)}</span></div>
       </div>
     </header>
+    ${oficial}
     <div class="jogador-layout">
       <section class="card">
         <div class="card-topo"><h2>Evolução</h2><div class="forma"><span class="sub">Últimos ${ultimos.length}</span>${ultimos.map((u) => notaHTML(u.nota, 'pequena')).join('')}</div></div>
