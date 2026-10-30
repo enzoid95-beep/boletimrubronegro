@@ -15,7 +15,8 @@
       "nome": "Andrew",
       "posicao": "GOL",
       "numero": 42,
-      "ativo": true
+      "ativo": true,
+      "foto": "fotos/andrew.jpg?v=mvui0qcy"
     },
     {
       "id": "varela",
