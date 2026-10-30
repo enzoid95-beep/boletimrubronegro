@@ -166,7 +166,8 @@
       "nome": "Pedro",
       "posicao": "ATA",
       "numero": 9,
-      "ativo": true
+      "ativo": true,
+      "foto": "fotos/pedro.jpg?v=mvuig8mn"
     },
     {
       "id": "valencia",
