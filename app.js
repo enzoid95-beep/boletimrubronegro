@@ -256,7 +256,8 @@ async function carregar() {
   estado.partidas = (partidas.partidas || []).sort((a, b) => b.data.localeCompare(a.data));
   estado.calendario = (calendario.jogos || []).sort((a, b) => a.data.localeCompare(b.data) || (a.hora || '').localeCompare(b.hora || ''));
   estado.times = times.times || {};
-  estado.estat = estat || PADRAO.estatisticas;
+  // se o arquivo data/estatisticas.json não estiver no repositório, usa a base embutida abaixo
+  estado.estat = estat && Object.keys(estat.jogadores || {}).length ? estat : ESTAT_EMBUTIDA;
 }
 
 /* ================= correções do elenco ================= */
@@ -270,6 +271,9 @@ function aplicarCorrecoes(meta) {
   CORRECOES.forEach((c) => { if (!feitas.includes(c.chave)) c.aplicar(estado.elenco); });
 }
 const elencoParaSalvar = (extra = {}) => ({ ...estado.meta.elenco, ...extra, jogadores: estado.elenco, correcoes: CORRECOES.map((c) => c.chave) });
+
+/* Gols e assistências da temporada (cópia de data/estatisticas.json, usada se o arquivo faltar) */
+const ESTAT_EMBUTIDA = {"temporada": 2026, "ate": "2026-10-29", "competicoes": "todas as competições oficiais", "fonte": "GOL LAB (temporada até 26/10) e Opta (Vasco 1×4 Flamengo, 29/10)", "nota": "Jogos com nota lançados depois desta data somam gols e assistências automaticamente.", "jogadores": {"pedro": {"gols": 27, "assist": 10, "jogos": 53, "minutos": 3605}, "samuel-lino": {"gols": 14, "assist": 13, "jogos": 53, "minutos": 3448}, "carrascal": {"gols": 8, "assist": 11, "jogos": 47, "minutos": 2748}, "bruno-henrique": {"gols": 9, "assist": 8, "jogos": 45, "minutos": 1861}, "arrascaeta": {"gols": 10, "assist": 5, "jogos": 38, "minutos": 2334}, "lucas-paqueta": {"gols": 13, "assist": 1, "jogos": 42, "minutos": 2498}, "jorginho": {"gols": 4, "assist": 3, "jogos": 37, "minutos": 2877}, "plata": {"gols": 4, "assist": 3, "jogos": 40, "minutos": 2034}, "luiz-araujo": {"gols": 4, "assist": 2, "jogos": 32, "minutos": 1190}, "varela": {"gols": 1, "assist": 6, "jogos": 36, "minutos": 2486}, "emerson-royal": {"gols": 0, "assist": 5, "jogos": 35, "minutos": 2859}, "leo-pereira": {"gols": 3, "assist": 1, "jogos": 44, "minutos": 3817}, "ayrton-lucas": {"gols": 0, "assist": 4, "jogos": 34, "minutos": 2313}, "pulgar": {"gols": 3, "assist": 0, "jogos": 38, "minutos": 2978}, "evertton-araujo": {"gols": 1, "assist": 2, "jogos": 35, "minutos": 2114}, "leo-ortiz": {"gols": 1, "assist": 1, "jogos": 43, "minutos": 3510}, "de-la-cruz": {"gols": 1, "assist": 1, "jogos": 23, "minutos": 627}, "danilo": {"gols": 1, "assist": 0, "jogos": 21, "minutos": 1531}, "rossi": {"gols": 0, "assist": 1, "jogos": 50, "minutos": 4530}, "alex-sandro": {"gols": 0, "assist": 1, "jogos": 32, "minutos": 2373}, "saul": {"gols": 0, "assist": 1, "jogos": 16, "minutos": 550}, "joaquin-freitas": {"gols": 0, "assist": 1, "jogos": 9, "minutos": 100}, "andrew": {"gols": 0, "assist": 0, "jogos": null, "minutos": null}, "vitao": {"gols": 0, "assist": 0, "jogos": null, "minutos": null}}};
 
 /* ================= cálculos ================= */
 function destaques(p) {
@@ -649,16 +653,19 @@ function telaJogador(id) {
   const oficial = of ? `<section class="card temporada-oficial">
       <div class="card-topo"><h2>Temporada ${estado.estat.temporada || ''}</h2><span class="sub">todas as competições</span></div>
       <div class="to-grade">
-        <div><span class="to-icone" aria-hidden="true">⚽</span><span class="numero-grande">${of.gols}</span><span>${of.gols === 1 ? 'gol' : 'gols'}</span></div>
-        <div><span class="to-icone" aria-hidden="true">👟</span><span class="numero-grande">${of.assist}</span><span>${of.assist === 1 ? 'assistência' : 'assistências'}</span></div>
         ${of.jogos ? `<div><span class="numero-grande">${of.jogos}</span><span>jogos</span></div>` : ''}
         ${of.minutos ? `<div><span class="numero-grande">${of.minutos.toLocaleString('pt-BR')}</span><span>minutos</span></div>` : ''}
         ${of.gols && of.minutos ? `<div><span class="numero-grande">${Math.round(of.minutos / of.gols)}</span><span>minutos por gol</span></div>` : ''}
       </div>
       <p class="dc-fonte">Fonte: ${esc(estado.estat.fonte)}.</p>
     </section>` : '';
-  if (!jogos.length) return `${topo}</header>${oficial}<p class="vazio">Ainda sem notas nesta temporada.</p>`;
+  const gaHeader = of ? `<div class="numeros">
+        <div><span class="to-icone" aria-hidden="true">⚽</span><span class="numero-grande">${of.gols}</span><span>${of.gols === 1 ? 'gol' : 'gols'} na temporada</span></div>
+        <div><span class="to-icone" aria-hidden="true">👟</span><span class="numero-grande">${of.assist}</span><span>${of.assist === 1 ? 'assistência' : 'assistências'} na temporada</span></div>
+      </div>` : '';
+  if (!jogos.length) return `${topo}${gaHeader}</header>${oficial}<p class="vazio">Ainda sem notas nesta temporada.</p>`;
   const s = estatisticas(jogos).find((x) => x.id === id);
+  const gTemp = of ? of.gols : s.gols, aTemp = of ? of.assist : s.assist;
   const cron = [...jogos].reverse().map((p) => ({ ...p.atuacoes.find((a) => a.jogador === id), id: p.id, data: p.data, adversario: p.adversario }));
   const melhor = cron.reduce((a, b) => (b.nota > a.nota ? b : a));
   const ultimos = cron.slice(-5);
@@ -666,6 +673,8 @@ function telaJogador(id) {
       <div class="numeros">
         <div><span class="numero-grande destaque-num">${fmtNota(s.media)}</span><span>média</span></div>
         <div><span class="numero-grande">${s.jogos}</span><span>${s.jogos === 1 ? 'jogo com nota' : 'jogos com nota'}</span></div>
+        <div><span class="to-icone" aria-hidden="true">⚽</span><span class="numero-grande">${gTemp}</span><span>${gTemp === 1 ? 'gol' : 'gols'}${of ? ' na temporada' : ''}</span></div>
+        <div><span class="to-icone" aria-hidden="true">👟</span><span class="numero-grande">${aTemp}</span><span>${aTemp === 1 ? 'assistência' : 'assistências'}${of ? ' na temporada' : ''}</span></div>
         <div><span class="numero-grande">${s.craque}</span><span>vezes craque</span></div>
         <div><span class="numero-grande">${fmtNota(melhor.nota)}</span><span>melhor nota, contra ${esc(timeDe(melhor.adversario).nome)}</span></div>
       </div>

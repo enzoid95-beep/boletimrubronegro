@@ -711,10 +711,11 @@ dialog::backdrop { background: rgba(5, 0, 1, .72); }
 .to-grade > div { position: relative; padding: .85rem 1rem; border-radius: 14px; background: rgba(0,0,0,.3); box-shadow: inset 0 1px 0 rgba(255,255,255,.07); }
 .to-icone { position: absolute; top: .7rem; right: .8rem; font-size: 1.1rem; opacity: .85; }
 
-/* ---------- Cards de jogador dentro dos boxes: vermelho escuro preenchido ---------- */
+/* ---------- Cards de jogador dentro dos boxes: só um leve tom avermelhado ---------- */
 .dc-lider, .dc-lista a, .craque-mini, .cr-base, .atuacao {
-  background: linear-gradient(160deg, #470a15 0%, #33060e 55%, #2a050c 100%);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .09), inset 0 0 0 1px rgba(255, 70, 90, .1);
+  background: linear-gradient(160deg, rgba(226, 0, 26, .11), rgba(226, 0, 26, .045));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06), inset 0 0 0 1px rgba(255, 90, 110, .08);
 }
-.dc-lista a:hover, .atuacao:hover { background: linear-gradient(160deg, #561020 0%, #3d0812 55%, #320710 100%); }
-.atuacao.craque { background: linear-gradient(110deg, #7a0d1f 0%, #470a15 55%, #33060e 100%); }
+.dc-lista a:hover, .atuacao:hover { background: linear-gradient(160deg, rgba(226, 0, 26, .17), rgba(226, 0, 26, .08)); }
+.atuacao.craque { background: linear-gradient(110deg, rgba(226, 0, 26, .24), rgba(226, 0, 26, .06) 70%); }
+.numeros > div { position: relative; }
