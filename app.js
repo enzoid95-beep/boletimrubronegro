@@ -251,11 +251,24 @@ async function carregar() {
   const [elenco, partidas, calendario, times] = dados;
   estado.meta = { elenco, partidas, calendario, times };
   estado.elenco = elenco.jogadores || [];
+  aplicarCorrecoes(elenco);
   estado.temporada = partidas.temporada || estado.temporada;
   estado.partidas = (partidas.partidas || []).sort((a, b) => b.data.localeCompare(a.data));
   estado.calendario = (calendario.jogos || []).sort((a, b) => a.data.localeCompare(b.data) || (a.hora || '').localeCompare(b.hora || ''));
   estado.times = times.times || {};
 }
+
+/* ================= correções do elenco ================= */
+// Ajustes pedidos depois que o elenco já estava publicado. Cada um vale até o próximo
+// “Salvar elenco”, que grava a correção no arquivo e registra a chave em "correcoes".
+const CORRECOES = [
+  { chave: '2026-10-samuel-lino-atacante', aplicar: (lista) => { const j = lista.find((x) => x.id === 'samuel-lino'); if (j) j.posicao = 'ATA'; } },
+];
+function aplicarCorrecoes(meta) {
+  const feitas = meta.correcoes || [];
+  CORRECOES.forEach((c) => { if (!feitas.includes(c.chave)) c.aplicar(estado.elenco); });
+}
+const elencoParaSalvar = (extra = {}) => ({ ...estado.meta.elenco, ...extra, jogadores: estado.elenco, correcoes: CORRECOES.map((c) => c.chave) });
 
 /* ================= cálculos ================= */
 function destaques(p) {
@@ -401,11 +414,87 @@ function telaJogos() {
     </section>`;
   }
 
+  const blocoDestaques = estado.partidas.length ? destaquesTemporada() : '';
   const vazio = !ult && !prox.length ? `<div class="card vazio-card"><p>Nenhum jogo avaliado ainda.</p><a class="botao" href="#/lancar">Dar as primeiras notas</a></div>` : '';
   return `<div class="dash">
-    <div class="dash-principal">${cta}${prox.length ? cartaoProximo(prox[0]) : ''}${vazio}${resultados}</div>
-    <aside class="dash-lateral">${ultimo}${calendario}</aside>
-  </div>`;
+      <div class="dash-principal">${cta}${prox.length ? cartaoProximo(prox[0]) : ''}${vazio}</div>
+      <aside class="dash-lateral">${ultimo}</aside>
+    </div>
+    ${blocoDestaques}
+    <div class="dash">
+      <div class="dash-principal">${resultados}</div>
+      <aside class="dash-lateral">${calendario}</aside>
+    </div>`;
+}
+
+/* ---------- destaques da temporada (página inicial) ---------- */
+function rankingPor(chave) {
+  const stats = estatisticas(estado.partidas).filter((s) => s[chave] > 0)
+    .sort((a, b) => b[chave] - a[chave] || a.jogos - b.jogos || b.media - a.media);
+  return stats;
+}
+function cartaoLider(titulo, icone, chave, unidade, vazio) {
+  const lista = rankingPor(chave);
+  if (!lista.length) {
+    return `<section class="card destaque-card"><div class="dc-topo"><h3>${titulo}</h3><span class="dc-icone" aria-hidden="true">${icone}</span></div><p class="sub">${vazio}</p></section>`;
+  }
+  const lider = lista[0], j = jogador(lider.id);
+  const empatados = lista.filter((s) => s[chave] === lider[chave]).length;
+  return `<section class="card destaque-card">
+    <div class="dc-topo"><h3>${titulo}</h3><span class="dc-icone" aria-hidden="true">${icone}</span></div>
+    <a class="dc-lider" href="#/jogador/${j.id}">
+      ${avatarHTML(j, 'g')}
+      <div class="dc-lider-info">
+        <b>${esc(j.nome)}</b>
+        <span class="sub">${bandeiraHTML(j)}${POS_UM[j.posicao]}</span>
+        <span class="dc-numero">${lider[chave]}<small>${lider[chave] === 1 ? unidade[0] : unidade[1]}</small></span>
+        <span class="sub">em ${plural(lider.jogos, 'jogo', 'jogos')}</span>
+        ${empatados > 1 ? `<span class="pilula pilula-mini dc-empate">empatado com mais ${empatados - 1}</span>` : ''}
+      </div>
+    </a>
+    ${lista.length > 1 ? `<ol class="dc-lista" start="2">${lista.slice(1, 5).map((s, i) => {
+      const x = jogador(s.id);
+      return `<li><a href="#/jogador/${x.id}"><span class="dc-pos">${i + 2}</span>${avatarHTML(x, 'm')}<span class="dc-nome"><b>${esc(x.nome)}</b><span class="sub">${plural(s.jogos, 'jogo', 'jogos')}</span></span><span class="dc-qtd">${s[chave]}</span></a></li>`;
+    }).join('')}</ol>` : ''}
+  </section>`;
+}
+function cartaoNotasIndividuais(titulo, icone, ordem) {
+  const todas = [];
+  estado.partidas.forEach((p) => p.atuacoes.forEach((a) => todas.push({ ...a, p })));
+  todas.sort((a, b) => (ordem === 'maior' ? b.nota - a.nota : a.nota - b.nota) || b.p.data.localeCompare(a.p.data));
+  return `<section class="card destaque-card">
+    <div class="dc-topo"><h3>${titulo}</h3><span class="dc-icone" aria-hidden="true">${icone}</span></div>
+    <ol class="dc-lista">${todas.slice(0, 5).map((a, i) => {
+      const x = jogador(a.jogador);
+      return `<li><a href="#/jogo/${a.p.id}"><span class="dc-pos">${i + 1}</span>${avatarHTML(x, 'm')}<span class="dc-nome"><b>${esc(x.nome)}</b><span class="sub">contra ${esc(timeDe(a.p.adversario).nome)}, ${fmtData(a.p.data)}</span></span>${notaHTML(a.nota, 'pequena')}</a></li>`;
+    }).join('')}</ol>
+  </section>`;
+}
+function cartaoMedias() {
+  const n = estado.partidas.length;
+  const minimo = n >= 10 ? 5 : n >= 4 ? 3 : n >= 2 ? 2 : 1;
+  const lista = estatisticas(estado.partidas).filter((s) => s.jogos >= minimo).sort((a, b) => b.media - a.media || b.jogos - a.jogos);
+  return `<section class="card destaque-card">
+    <div class="dc-topo"><h3>Melhores médias</h3><span class="dc-icone" aria-hidden="true">📈</span></div>
+    <p class="sub dc-nota">Mínimo de ${plural(minimo, 'jogo', 'jogos')} com nota.</p>
+    <ol class="dc-lista">${lista.slice(0, 5).map((s, i) => {
+      const x = jogador(s.id);
+      return `<li><a href="#/jogador/${x.id}"><span class="dc-pos">${i + 1}</span>${avatarHTML(x, 'm')}<span class="dc-nome"><b>${esc(x.nome)}</b><span class="sub">${plural(s.jogos, 'jogo', 'jogos')}</span></span>${notaHTML(s.media, 'pequena')}</a></li>`;
+    }).join('')}</ol>
+    ${lista.length ? '' : '<p class="sub">Ainda não há jogadores com jogos suficientes.</p>'}
+  </section>`;
+}
+function destaquesTemporada() {
+  return `<section class="secao">
+    <div class="secao-topo"><h2>Destaques da temporada</h2><a class="link-sutil" href="#/ranking">Ver ranking completo</a></div>
+    <div class="grade-destaques">
+      ${cartaoLider('Artilheiro', '⚽', 'gols', ['gol', 'gols'], 'Nenhum gol registrado ainda.')}
+      ${cartaoLider('Maior assistente', '👟', 'assist', ['assistência', 'assistências'], 'Nenhuma assistência registrada ainda.')}
+      ${cartaoMedias()}
+      ${cartaoNotasIndividuais('Maiores notas', '🔝', 'maior')}
+      ${cartaoNotasIndividuais('Piores notas', '🔻', 'menor')}
+    </div>
+  </section>`;
 }
 
 function telaJogo(id) {
@@ -1100,7 +1189,7 @@ function ligarElenco() {
         await enviarArquivo(caminho, base64, `Foto de ${j.nome}`);
         estado.previas[caminho] = dataURL;
         j.foto = `${caminho}?v=${Date.now().toString(36)}`;
-        await gravarDados('elenco', { ...estado.meta.elenco, jogadores: estado.elenco }, `Foto de ${j.nome}`);
+        await gravarDados('elenco', elencoParaSalvar(), `Foto de ${j.nome}`);
         avisar(`Foto de ${j.nome} salva.`); render();
       } });
     }
@@ -1115,7 +1204,7 @@ function ligarElenco() {
     if (b.id === 'e-salvar') {
       b.disabled = true;
       try {
-        await gravarDados('elenco', { ...estado.meta.elenco, atualizado: hojeISO(), jogadores: estado.elenco }, 'Atualiza elenco');
+        await gravarDados('elenco', elencoParaSalvar({ atualizado: hojeISO() }), 'Atualiza elenco');
         avisar('Elenco salvo.'); render();
       } catch (e) { avisar(explicarErro(e), true); b.disabled = false; }
     }
