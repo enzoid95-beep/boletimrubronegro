@@ -10,6 +10,7 @@ const ORDEM_POS = ['GOL', 'DEF', 'MEI', 'ATA'];
 const NOTA_PADRAO = 6;
 const CFG_KEY = 'boletim-config';
 const RASCUNHO_KEY = 'boletim-rascunho';
+const RASCUNHOS_KEY = 'boletim-rascunhos';
 const MESES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
 const MESES_LONGO = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
 const DIAS = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
@@ -43,6 +44,7 @@ const hojeISO = () => new Date().toLocaleDateString('sv-SE');
 const plural = (n, um, varios) => `${n} ${n === 1 ? um : varios}`;
 
 function fmtData(iso, estilo = 'curto') {
+  if (!iso || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) return 'data a definir';
   const [a, m, d] = iso.split('-').map(Number);
   const dia = DIAS[new Date(Date.UTC(a, m - 1, d, 12)).getUTCDay()];
   if (estilo === 'longo') return `${d} de ${MESES_LONGO[m - 1]} de ${a}`;
@@ -51,6 +53,7 @@ function fmtData(iso, estilo = 'curto') {
 }
 const fmtHora = (h) => (h ? h.replace(/^(\d{2}):00$/, '$1h').replace(':', 'h') : 'horário a definir');
 function faltam(iso) {
+  if (!iso) return '';
   const dias = Math.round((new Date(iso + 'T12:00:00') - new Date(hojeISO() + 'T12:00:00')) / 864e5);
   if (dias === 0) return 'Hoje';
   if (dias === 1) return 'Amanhã';
@@ -58,6 +61,7 @@ function faltam(iso) {
 }
 const resultado = (p) => (p.golsFla > p.golsAdv ? 'v' : p.golsFla < p.golsAdv ? 'd' : 'e');
 const RES_TEXTO = { v: 'Vitória', e: 'Empate', d: 'Derrota' };
+const seloResultado = (p) => `<span class="selo-res r-${resultado(p)}">${RES_TEXTO[resultado(p)]}</span>`;
 
 function avisar(msg, erro = false) {
   const el = $('#aviso');
@@ -335,7 +339,7 @@ function telaJogos() {
 
   const cta = temToken() && semNota.length
     ? `<a class="card cta-notas" href="#/lancar/novo/${semNota[0].id}">
-        <div class="cta-escudos">${escudoHTML('Flamengo', 'm')}${escudoHTML(semNota[0].adversario, 'm')}</div>
+        <div class="cta-escudos">${semNota[0].mandante ? escudoHTML('Flamengo', 'm') + escudoHTML(semNota[0].adversario, 'm') : escudoHTML(semNota[0].adversario, 'm') + escudoHTML('Flamengo', 'm')}</div>
         <div><span class="rotulo">Jogo sem notas</span><b>${tituloJogo(semNota[0])}</b><span class="sub">${fmtData(semNota[0].data, 'semana')}</span></div>
         <span class="botao">Dar as notas</span>
       </a>` : '';
@@ -343,8 +347,9 @@ function telaJogos() {
   const ultimo = ult ? (() => {
     const d = destaques(ult);
     return `<a class="card ultimo" href="#/jogo/${ult.id}">
-      <div class="card-topo"><h2>Último jogo</h2><span class="sub">${fmtData(ult.data)}, ${esc(ult.competicao)}</span></div>
+      <div class="card-topo"><h2>Último jogo</h2>${seloResultado(ult)}</div>
       ${confronto(ult, 'm', placarDe(ult))}
+      <p class="sub centro">${fmtData(ult.data, 'semana')}, ${esc(ult.competicao)}</p>
       <div class="craque-mini">
         ${avatarHTML(jogador(d.craque[0]), 'm')}
         <div><span class="rotulo">Craque do jogo</span><b>${nomes(d.craque)}</b></div>
@@ -372,16 +377,16 @@ function telaJogos() {
     const e = estado.partidas.filter((p) => resultado(p) === 'e').length;
     resultados = `<section class="secao">
       <div class="secao-topo"><h2>Resultados</h2>
-        <span class="placar-temporada"><span class="r-v">${v}V</span><span>${e}E</span><span class="r-d">${estado.partidas.length - v - e}D</span></span></div>
+        <span class="placar-temporada"><span class="r-v" title="Vitórias">${v}V</span><span class="r-e" title="Empates">${e}E</span><span class="r-d" title="Derrotas">${estado.partidas.length - v - e}D</span></span></div>
       ${comps.length > 1 ? `<div class="segmentos" role="group" aria-label="Filtrar por competição">
         ${['Todas', ...comps].map((c) => `<button class="seg" data-comp="${esc(c)}" aria-pressed="${estado.filtroComp === c}">${esc(c)}</button>`).join('')}
       </div>` : ''}
       <ul class="cards-resultado">${lista.map((p) => {
         const dd = destaques(p);
-        return `<li><a class="card card-resultado" href="#/jogo/${p.id}">
+        return `<li><a class="card card-resultado res-${resultado(p)}" href="#/jogo/${p.id}">
           <div class="cr-topo">
             ${escudoHTML(p.adversario, 'm')}
-            <div class="cr-adv"><b>${esc(timeDe(p.adversario).nome)}</b><span class="sub">${fmtData(p.data)}, ${esc(p.competicao)}, ${p.mandante ? 'casa' : 'fora'}</span></div>
+            <div class="cr-adv"><b>${esc(timeDe(p.adversario).nome)}</b><span class="sub">${seloResultado(p)}${fmtData(p.data)}, ${p.mandante ? 'casa' : 'fora'}</span><span class="sub">${esc(p.competicao)}</span></div>
             <span class="res r-${resultado(p)}">${p.golsFla}<small>×</small>${p.golsAdv}</span>
           </div>
           <div class="cr-base">
@@ -419,6 +424,7 @@ function telaJogo(id) {
         <header class="card placar-jogo">
           <div class="sub">${fmtData(p.data, 'semana')}${p.hora ? `, ${fmtHora(p.hora)}` : ''}${localJogo(p) ? `, ${localJogo(p)}` : ''}</div>
           ${confronto(p, 'g', placarDe(p))}
+          ${seloResultado(p)}
           <div class="sub">${rotuloJogo(p)}</div>
           ${temToken() ? `<a class="botao sec" href="#/lancar/${p.id}">Editar notas</a>` : ''}
         </header>
@@ -555,7 +561,7 @@ function telaJogador(id) {
         <ul class="resultados">${jogos.map((p) => {
           const a = p.atuacoes.find((x) => x.jogador === id);
           const extra = [a.gols ? plural(a.gols, 'gol', 'gols') : '', a.assist ? plural(a.assist, 'assist.', 'assists.') : ''].filter(Boolean).join(', ');
-          return `<li><a class="resultado" href="#/jogo/${p.id}">
+          return `<li><a class="resultado res-${resultado(p)}" href="#/jogo/${p.id}">
             ${escudoHTML(p.adversario, 'p')}
             <span class="adv">${esc(timeDe(p.adversario).nome)}<span class="comp">${fmtData(p.data)}, ${esc(p.competicao)}${extra ? `, ${extra}` : ''}</span></span>
             <span class="res r-${resultado(p)}">${p.golsFla}<small>×</small>${p.golsAdv}</span>
@@ -598,9 +604,34 @@ function rascunhoDe(p) {
   estado.elenco.forEach((j) => { if (j.ativo !== false && !atuacoes[j.id]) naoAtuou[j.id] = true; });
   return { ...p, atuacoes, naoAtuou };
 }
-function guardarRascunho() {
-  try { localStorage.setItem(RASCUNHO_KEY, JSON.stringify(estado.rascunho)); } catch { /* segue em memória */ }
+const chaveRascunho = (r) => (r.id ? `p:${r.id}` : r.calendarioId ? `c:${r.calendarioId}` : 'outro');
+function lerRascunhos() {
+  let m = {};
+  try { m = JSON.parse(localStorage.getItem(RASCUNHOS_KEY) || '{}') || {}; } catch { m = {}; }
+  try { // aproveita o rascunho único das versões anteriores
+    const velho = JSON.parse(localStorage.getItem(RASCUNHO_KEY) || 'null');
+    if (velho && !m[chaveRascunho(velho)]) { m[chaveRascunho(velho)] = velho; m._ultimo = chaveRascunho(velho); }
+    localStorage.removeItem(RASCUNHO_KEY);
+  } catch { /* ok */ }
+  return m;
 }
+const rascunhos = lerRascunhos();
+function gravarRascunhos() {
+  try { localStorage.setItem(RASCUNHOS_KEY, JSON.stringify(rascunhos)); } catch { /* segue em memória */ }
+}
+function guardarRascunho() {
+  const r = estado.rascunho;
+  if (!r) return;
+  rascunhos[chaveRascunho(r)] = r;
+  rascunhos._ultimo = chaveRascunho(r);
+  gravarRascunhos();
+}
+function removerRascunho(r) {
+  delete rascunhos[chaveRascunho(r)];
+  if (rascunhos._ultimo === chaveRascunho(r)) delete rascunhos._ultimo;
+  gravarRascunhos();
+}
+const notasNoRascunho = (r) => (r ? Object.values(r.atuacoes || {}).filter((a) => a.nota != null).length : 0);
 function precisaConexao() {
   return `${abasAutor('conexao')}<p class="ajuda">Para dar notas, conecte este navegador ao seu repositório. É só uma vez.</p>${telaConexao()}`;
 }
@@ -613,18 +644,18 @@ function telaLancar(param, calId) {
   if (!temToken()) return precisaConexao();
   if (param === 'novo' && calId) {
     const c = estado.calendario.find((x) => x.id === calId);
-    if (c && (!estado.rascunho || estado.rascunho.calendarioId !== calId)) { estado.rascunho = novoRascunho(c); guardarRascunho(); }
+    if (c && (!estado.rascunho || estado.rascunho.id || estado.rascunho.calendarioId !== calId)) estado.rascunho = rascunhos[`c:${calId}`] || novoRascunho(c);
   } else if (param === 'outro') {
-    if (!estado.rascunho || !estado.rascunho.manual || estado.rascunho.id) { estado.rascunho = novoRascunho(null); guardarRascunho(); }
+    if (!estado.rascunho || !estado.rascunho.manual || estado.rascunho.id) estado.rascunho = rascunhos.outro || novoRascunho(null);
   } else if (param && param !== 'novo') {
     const p = estado.partidas.find((x) => x.id === param);
     if (!p) return `${abasAutor('lancar')}<p class="vazio">Jogo não encontrado.</p>`;
-    if (!estado.rascunho || estado.rascunho.id !== param) estado.rascunho = rascunhoDe(p);
+    if (!estado.rascunho || estado.rascunho.id !== param) estado.rascunho = rascunhos[`p:${param}`] || rascunhoDe(p);
   } else if (!estado.rascunho || estado.rascunho.id) {
-    let salvo = null;
-    try { salvo = JSON.parse(localStorage.getItem(RASCUNHO_KEY) || 'null'); } catch { salvo = null; }
+    const ultimo = rascunhos[rascunhos._ultimo];
+    const aberto = ultimo && !ultimo.id && (ultimo.manual || jogosAbertos().some((c) => c.id === ultimo.calendarioId));
     const pend = jogosSemNota()[0];
-    estado.rascunho = salvo && !salvo.id ? salvo : pend ? novoRascunho(pend) : null;
+    estado.rascunho = aberto ? ultimo : pend ? rascunhos[`c:${pend.id}`] || novoRascunho(pend) : null;
   }
   const r = estado.rascunho;
   if (r) r.naoAtuou = r.naoAtuou || {};
@@ -636,7 +667,7 @@ function telaLancar(param, calId) {
       <div class="escolha-escudos">${escudoHTML(c.mandante ? 'Flamengo' : c.adversario, 'p')}<span>×</span>${escudoHTML(c.mandante ? c.adversario : 'Flamengo', 'p')}</div>
       <b>${esc(timeDe(c.adversario).nome)}</b>
       <span class="sub">${fmtData(c.data)}, ${c.mandante ? 'casa' : 'fora'}</span>
-      <span class="pilula ${passou ? 'pilula-alerta' : ''}">${passou ? 'Sem notas' : faltam(c.data)}</span>
+      ${notasNoRascunho(rascunhos[`c:${c.id}`]) ? `<span class="pilula pilula-andamento">${plural(notasNoRascunho(rascunhos[`c:${c.id}`]), 'nota preenchida', 'notas preenchidas')}</span>` : `<span class="pilula ${passou ? 'pilula-alerta' : ''}">${passou ? 'Sem notas' : faltam(c.data)}</span>`}
     </a>`;
   };
   const escolher = r && r.id
@@ -737,10 +768,7 @@ function linhaJogador(j, r) {
     </span>`;
   return `<div class="jog ${sit}" data-jogador="${j.id}" style="--h:${matizNota(v)};--p:${v * 10}%" ${sit === 'nao-atuou' ? 'hidden' : ''}>
     ${avatarHTML(j, 'g')}
-    <span class="jog-nome">
-      <span class="linha-nome">${numeroCamisaHTML(j)}<b>${esc(j.nome)}</b></span>
-      <span class="sub">${bandeiraHTML(j)}${POS_UM[j.posicao]}</span>
-    </span>
+    <span class="jog-nome">${numeroCamisaHTML(j)}<b>${esc(j.nome)}</b><span class="sub">${bandeiraHTML(j)}${POS_UM[j.posicao]}</span></span>
     <div class="regua-box">
       <input class="regua" type="range" min="0" max="10" step="0.5" value="${v}" data-regua aria-label="Nota de ${esc(j.nome)}">
       <span class="marcas" aria-hidden="true">${[0, 2, 4, 6, 8, 10].map((n) => `<i>${n}</i>`).join('')}</span>
@@ -928,7 +956,7 @@ async function salvarPartida(botao) {
     estado.partidas = lista;
     const editando = !!r.id;
     estado.rascunho = null;
-    try { localStorage.removeItem(RASCUNHO_KEY); } catch { /* ok */ }
+    removerRascunho(r);
     avisar(editando ? 'Alterações salvas. O site atualiza em cerca de 1 minuto.' : 'Notas salvas. O site atualiza em cerca de 1 minuto.');
     location.hash = `#/jogo/${p.id}`;
   } catch (e) {
@@ -943,7 +971,7 @@ async function excluirPartida(botao) {
   botao.disabled = true;
   try {
     await gravarDados('partidas', { ...estado.meta.partidas, temporada: estado.temporada, partidas: lista }, `Exclui ${r.data} × ${r.adversario}`);
-    estado.partidas = lista; estado.rascunho = null;
+    estado.partidas = lista; removerRascunho(r); estado.rascunho = null;
     avisar('Jogo excluído.');
     location.hash = '#/';
   } catch (e) { avisar(explicarErro(e), true); botao.disabled = false; }
