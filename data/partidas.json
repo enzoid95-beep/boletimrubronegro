@@ -1,4 +1,111 @@
 {
   "temporada": 2026,
-  "partidas": []
+  "partidas": [
+    {
+      "id": "2026-10-29-vasco",
+      "data": "2026-10-29",
+      "adversario": "Vasco",
+      "mandante": false,
+      "competicao": "Brasileirão",
+      "golsFla": 4,
+      "golsAdv": 1,
+      "atuacoes": [
+        {
+          "jogador": "rossi",
+          "nota": 8.5,
+          "gols": 0,
+          "assist": 0
+        },
+        {
+          "jogador": "alex-sandro",
+          "nota": 10,
+          "gols": 0,
+          "assist": 0
+        },
+        {
+          "jogador": "varela",
+          "nota": 8.5,
+          "gols": 0,
+          "assist": 0
+        },
+        {
+          "jogador": "leo-ortiz",
+          "nota": 8.5,
+          "gols": 0,
+          "assist": 0
+        },
+        {
+          "jogador": "leo-pereira",
+          "nota": 8.5,
+          "gols": 0,
+          "assist": 0
+        },
+        {
+          "jogador": "danilo",
+          "nota": 8.5,
+          "gols": 0,
+          "assist": 0
+        },
+        {
+          "jogador": "vitao",
+          "nota": 8.5,
+          "gols": 0,
+          "assist": 0
+        },
+        {
+          "jogador": "saul",
+          "nota": 8.5,
+          "gols": 0,
+          "assist": 0
+        },
+        {
+          "jogador": "carrascal",
+          "nota": 9,
+          "gols": 0,
+          "assist": 0
+        },
+        {
+          "jogador": "de-la-cruz",
+          "nota": 5.5,
+          "gols": 0,
+          "assist": 0
+        },
+        {
+          "jogador": "evertton-araujo",
+          "nota": 7.5,
+          "gols": 0,
+          "assist": 0
+        },
+        {
+          "jogador": "luiz-araujo",
+          "nota": 7,
+          "gols": 0,
+          "assist": 0
+        },
+        {
+          "jogador": "plata",
+          "nota": 9,
+          "gols": 0,
+          "assist": 0
+        },
+        {
+          "jogador": "bruno-henrique",
+          "nota": 9.5,
+          "gols": 0,
+          "assist": 0
+        },
+        {
+          "jogador": "joaquin-freitas",
+          "nota": 8,
+          "gols": 0,
+          "assist": 0
+        }
+      ],
+      "calendarioId": "bra-33",
+      "hora": "20:00",
+      "rodada": 33,
+      "estadio": "São Januário",
+      "cidade": "Rio de Janeiro"
+    }
+  ]
 }
