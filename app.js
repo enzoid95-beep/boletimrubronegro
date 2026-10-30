@@ -30,8 +30,14 @@ const $ = (sel, raiz = document) => raiz.querySelector(sel);
 const esc = (t) => String(t ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const fmtNota = (n) => (n == null || isNaN(n) ? '–' : Number(n).toFixed(1).replace('.', ','));
 const slug = (t) => String(t).normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-const classeNota = (n) => (n >= 8 ? 'n-otima' : n >= 7 ? 'n-boa' : n > 5 ? 'n-media' : 'n-ruim');
-const notaHTML = (n, extra = '') => `<span class="nota ${classeNota(n)} ${extra}">${fmtNota(n)}</span>`;
+// Cor da nota: vermelho (ruim) → dourado (mediana) → verde (7 pra cima, cada vez mais verde)
+function matizNota(n) {
+  if (n == null || isNaN(n)) return 0;
+  if (n < 5) return Math.round(2 + (n / 5) * 18);
+  if (n < 7) return Math.round(38 + ((n - 5) / 2) * 12);
+  return Math.round(100 + ((n - 7) / 3) * 45);
+}
+const notaHTML = (n, extra = '') => `<span class="nota ${n >= 8.5 ? 'cheia' : ''} ${extra}" style="--h:${matizNota(n)}">${fmtNota(n)}</span>`;
 const jogador = (id) => estado.elenco.find((j) => j.id === id) || { id, nome: id, posicao: 'MEI', numero: null };
 const hojeISO = () => new Date().toLocaleDateString('sv-SE');
 const plural = (n, um, varios) => `${n} ${n === 1 ? um : varios}`;
@@ -473,7 +479,7 @@ function graficoEvolucao(pontos) {
     <line x1="${m.e}" x2="${W - m.d}" y1="${y(media)}" y2="${y(media)}" stroke="var(--apagado)" stroke-dasharray="4 4"/>
     <text x="${m.e + 6}" y="${y(media) - 6}" fill="var(--apagado)" font-size="12">média ${fmtNota(media)}</text>
     <path d="${caminho}" fill="none" stroke="#ff1f38" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
-    ${pontos.map((p, i) => `<a href="#/jogo/${p.id}"><circle cx="${x(i)}" cy="${y(p.nota)}" r="6" fill="${p.nota >= 7 ? '#ff1f38' : '#120507'}" stroke="#ff1f38" stroke-width="2.5"><title>${fmtData(p.data)} × ${esc(p.adversario)}: ${fmtNota(p.nota)}</title></circle></a>
+    ${pontos.map((p, i) => `<a href="#/jogo/${p.id}"><circle cx="${x(i)}" cy="${y(p.nota)}" r="6.5" fill="hsl(${matizNota(p.nota)} 80% 50%)" stroke="#120507" stroke-width="2"><title>${fmtData(p.data)} × ${esc(p.adversario)}: ${fmtNota(p.nota)}</title></circle></a>
       ${i % passo === 0 ? `<text x="${x(i)}" y="${H - 8}" fill="var(--apagado)" font-size="11" text-anchor="middle">${fmtData(p.data)}</text>` : ''}`).join('')}
   </svg>`;
 }
@@ -709,9 +715,14 @@ function atualizarLinha(id) {
   const r = estado.rascunho;
   const el = document.querySelector(`.jog[data-jogador="${id}"]`);
   if (!el) return;
-  const novo = document.createElement('div');
-  novo.innerHTML = linhaJogador(jogador(id), r);
-  el.replaceWith(novo.firstElementChild);
+  const sit = situacao(r, id), a = r.atuacoes[id];
+  el.classList.remove('pendente', 'com-nota', 'nao-atuou');
+  el.classList.add(sit);
+  const btn = el.querySelector('.nota-btn');
+  btn.innerHTML = temNota(r, id) ? notaHTML(a.nota) : '<span class="nota-vazia">Nota</span>';
+  btn.disabled = sit === 'nao-atuou';
+  el.querySelector('.badges').innerHTML = badgesGA(a);
+  el.querySelector('[data-nao]').checked = sit === 'nao-atuou';
   $('#contagem').textContent = contagemTexto();
   $('#barra-fill').style.width = progresso() + '%';
 }
@@ -739,14 +750,24 @@ function abrirFolha(id) {
         ${['gols', 'assist'].map((k) => `<div class="contador contador-mini"><span class="rotulo">${k === 'gols' ? 'Gols' : 'Assistências'}</span>
           <button class="redondo" data-ga="${k}" data-delta="-1" aria-label="Diminuir">−</button><span class="contador-valor">${a[k] || 0}</span><button class="redondo" data-ga="${k}" data-delta="1" aria-label="Aumentar">+</button></div>`).join('')}
       </div>
-      <div class="grade-notas">${VALORES_NOTA.map((v) => `<button class="chip-nota ${classeNota(v)} ${a.nota === v ? 'ativa' : ''}" data-nota="${v}">${fmtNota(v)}</button>`).join('')}</div>
+      <div class="grade-notas">${VALORES_NOTA.map((v) => `<button class="chip-nota ${a.nota === v ? 'ativa' : ''}" style="--h:${matizNota(v)}" data-nota="${v}">${fmtNota(v)}</button>`).join('')}</div>
       <div class="folha-rodape">
         <button class="botao sec" data-acao="nao">Não atuou</button>
         ${a.nota != null ? '<button class="botao sec" data-acao="limpar">Limpar nota</button>' : ''}
         <button class="botao" data-acao="fechar">Pronto</button>
       </div>`;
   };
-  const fechar = () => { dlg.close(); dlg.remove(); };
+  // Ao fechar, a página fica parada no último jogador avaliado, sem voltar ao topo
+  const fechar = () => {
+    if (!dlg.open) return;
+    dlg.close(); dlg.remove();
+    const linha = document.querySelector(`.jog[data-jogador="${atual}"]`);
+    if (linha) {
+      linha.querySelector('.nota-btn').focus({ preventScroll: true });
+      const r0 = linha.getBoundingClientRect();
+      if (r0.top < 80 || r0.bottom > innerHeight - 140) linha.scrollIntoView({ block: 'center', behavior: 'auto' });
+    }
+  };
   const proximoPendente = () => {
     const idx = lista.findIndex((x) => x.id === atual);
     return lista.slice(idx + 1).find((x) => situacao(r, x.id) === 'pendente');
@@ -788,8 +809,9 @@ function abrirFolha(id) {
       if (lista[idx]) { atual = lista[idx].id; desenhar(); }
     }
   });
-  dlg.addEventListener('close', () => dlg.remove());
+  dlg.addEventListener('cancel', (e) => { e.preventDefault(); fechar(); });
   desenhar();
+  if (document.activeElement) document.activeElement.blur(); // impede o navegador de rolar até o botão ao fechar
   dlg.showModal();
 }
 
@@ -1221,7 +1243,16 @@ function ligarRanking() {
   });
 }
 
-window.addEventListener('hashchange', () => { render(); window.scrollTo(0, 0); });
+const posicoes = {};
+if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+window.addEventListener('hashchange', (e) => {
+  const antes = new URL(e.oldURL).hash || '#/';
+  posicoes[antes] = window.scrollY;
+  render();
+  const alvo = posicoes[location.hash || '#/'] || 0;
+  window.scrollTo({ top: alvo, behavior: 'instant' });
+  if (alvo) requestAnimationFrame(() => window.scrollTo({ top: alvo, behavior: 'instant' }));
+});
 carregar().then(render).catch((e) => {
   $('#app').innerHTML = `<p class="vazio">Não consegui carregar os dados: ${esc(e.message)}.</p>`;
 });
